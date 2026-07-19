@@ -1,7 +1,13 @@
-# include "string.h"
-# include "defs.h"
+#include "string.h"
 
 /*MUDULOS PUBLICOS QUE YO AGREGUE*/
+
+void limpiar_buffer() {
+	int c;
+	while ((c = getchar()) != '\n' && c != EOF);
+}
+
+#define fflush(stdin) limpiar_buffer()
 
 /*PUBLICOS*/
 
@@ -13,151 +19,175 @@ str create(){/*CREA NODO*/
 	nvo->sig = NULL;
 	return nvo;
 }
-	
-str load(){/*CARGA CADENA*/
-	str cab,aux, act;
-	char c;
-	cab=NULL; aux=NULL; act=NULL;
 
-	fflush(stdin);
-	c=getchar();
+str load(){/*CARGA CADENA*/
+	str head=NULL, aux=NULL, act=NULL;
+	char c = getchar();
 	while(c!=EOF && c!='\n'){
 		aux=create();
 		aux->dato=c;
-		
-		if( cab==NULL) cab = aux;
-		else	act->sig = aux;
-		
-		act=aux;
-		
+
+		if(head==NULL)
+			head = aux;
+		else
+			act->sig = aux;
+		act = aux;
+
 		c=getchar();
 	}
-	return cab;
+	return head;
 }
-	
-str load2(const char* F){
-	
+
+str load2(const char* cadena){
+
 	str Cab=NULL; str act=NULL;
-	str nvo;
 	int i=0;
-	
-	while(F[i]!='\0'){
-		nvo=create();
-		nvo->dato = F[i];
-		
-		if( Cab==NULL) Cab = nvo;
-		else	act->sig = nvo;
-		
-		act=nvo;
+
+	while(cadena[i]!='\0'){
+		str nvo=create();
+		nvo->dato = cadena[i];
+
+		if(Cab==NULL)
+			Cab = nvo;
+		else
+			act->sig = nvo;
+		act = nvo;
+
 		i++;
 	}
 	return Cab;
 }
-	
+
 void print(str cad){
 	if(cad!=NULL){
-		// printf("'");
+		printf("'");
 		while(cad!=NULL){
 			printf("%c",cad->dato);
 			cad=cad->sig;
 		}
-		// printf("'");
+		printf("'");
 	}
-	
 }
 str concat(str a,str b){
-	str trav = NULL;
-	
-	while(a!= NULL && a->dato == '\0')
+	str head=NULL, aux=NULL, act=NULL;
+	while (a!=NULL) {
+		aux=create();
+		aux->dato = a->dato;
+
+		if (head==NULL)
+			head = aux;
+		else
+			act->sig = aux;
+		act = aux;
+
 		a = a->sig;
-	while(b!= NULL && b->dato == '\0')
-		b = b->sig;
-	
-	if (a != NULL) {
-	 
-		trav = create();  
-		trav->dato = a->dato;
-		trav->sig = concat(a->sig, b);
-		
-	} else 
-		if (b != NULL) {
-			trav = create();  
-			trav->dato = b->dato;
-			trav->sig = concat(NULL, b->sig);  
 	}
-	return trav;
+	while (b!=NULL) {
+		aux=create();
+		aux->dato = b->dato;
+
+		if (head==NULL)
+			head = aux;
+		else
+			act->sig = aux;
+		act = aux;
+
+		b = b->sig;
+	}
+	return head;
 }
 
-str before_token(str cad1,char c){/*PARTE UNA CADENA*/
-	str aux,aux2, act;
-	aux=NULL;
-	aux2=NULL;
-	act= NULL;
-	if(cad1!=NULL){
-		while(cad1!=NULL && cad1->dato!=c ){
-			aux = create();
-			aux->dato = cad1->dato;
-		
-			if(aux2 == NULL) aux2 = aux;
-			else	act->sig = aux;
-			
-			act = aux;
-			cad1 = cad1->sig;
-		}
+str beforeToken(str origen, char token){/*PARTE UNA CADENA*/
+	str aux=NULL, head=NULL, act=NULL;
+
+	while(origen!=NULL && origen->dato!=token){
+		aux = create();
+		aux->dato = origen->dato;
+
+		if(head == NULL)
+			head = aux;
+		else
+			act->sig = aux;
+		act = aux;
+
+		origen = origen->sig;
 	}
-	return aux2;
+	return head;
 }
-str after_token (str a, char token){
-	if (a == NULL) return NULL;
-	
-	while (a != NULL && a->dato != token)
-		a = a->sig;
-	
-	if (a != NULL) 
-		a = a->sig;
-	
-	return copyStr(a);
+str afterToken (str origen, char token){
+	str aux=NULL, head=NULL, act=NULL;
+
+	while (origen != NULL && origen->dato!=token) {
+		origen = origen->sig;
+	}
+	if (origen) origen = origen->sig;
+
+	while (origen) {
+		aux = create();
+		aux->dato = origen->dato;
+
+		if(head == NULL)
+			head = aux;
+		else
+			act->sig = aux;
+		act = aux;
+		origen = origen->sig;
+	}
+	return head;
 }
 
 void freeString(str A){
 	str temp=NULL;
-	
-	while(A!=NULL){
+
+	while(A){
 		temp=A;
 		A=A->sig;
 		free(temp);
 	}
 }
-int compStr(str a, str b) {					/*Funcion usada en TADSet para contains*/
-	if(a!=NULL && b!=NULL){
+int compStr(str a, str b) {
+	int flag = 0;							/*Funcion usada en TADSet para contains, devuelve 0 si ambos son iguales*/
+	while (a && b && flag == 0) {
 		if (a->dato != b->dato)
-			return 1;
+			flag = 1;
+		a = a->sig;
+		b = b->sig;
+	}
+	if (a || b)
+		flag = 1;
+
+	return flag;
+}
+str copyStr(str origen){
+	str aux=NULL, head=NULL, act=NULL;
+	while(origen!=NULL){
+		aux = create();
+		aux->dato = origen->dato;
+
+		if(head == NULL)
+			head = aux;
 		else
-			return compStr (a->sig, b->sig);
+			act->sig = aux;
+		act = aux;
+
+		origen = origen->sig;
 	}
-	if (a!=NULL)
-		return 1;
-	if (b!=NULL)
-		return 1;
-	return 0;
+	return head;
 }
-str copyStr(str S){
-	
-	str Nvo = NULL;  
-	if (S != NULL) {
-		Nvo=create();
-		Nvo->dato = S->dato; 
-		Nvo->sig = copyStr(S->sig);
+int isin (str a, str b){						/*devuelve si la cadena a está contenida en la cadena b, 0 si es verdadero*/
+	int flag = 0;
+	while (a && b && a->dato != b->dato) {
+		a = a->sig;
 	}
-	return Nvo;
-}
-int isin (str a, str b){
-	if (a==NULL) return 1; 
-	if (b==NULL) return 0; 
-	
-	if (a->dato == b->dato) {
-		if (isin(a->sig, b->sig)) 
-			return 1;
+
+	while (a && b && flag == 0) {
+		if (a->dato != b->dato)
+			flag = 1;
+		a = a->sig;
+		b = b->sig;
 	}
-	return isin(a, b->sig);
+	if (a)
+		flag = 1;
+
+	return flag;
 }

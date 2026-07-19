@@ -1,6 +1,9 @@
 #include "data.h"
-#include "defs.h"
+#include "include/tree_nodetypes.h"
 #include <math.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdio.h>
 /*==========================================================================*/
 /*								CONSTRUCTORES								*/
 /*==========================================================================*/
@@ -11,25 +14,25 @@ tData createData(int tipo)
 
 	switch (tipo)
 	{
-	case STR:
+	case NODE_STR:
 		nvo->cad = create();
 		break;
 
-	case LIST:
-	case SET:
+	case NODE_LIST:
+	case NODE_SET:
 		nvo->dato = NULL;
 		nvo->sig = NULL;
 		break;
 
-	case INT:
+	case NODE_INT:
 		nvo->value = 0;
 		break;
 
-	case DOUBLE:
+	case NODE_DOUBLE:
 		nvo->real = 0.0;
 		break;
 
-	case BOOL:
+	case NODE_BOOL:
 		nvo->value = 0;
 		break;
 
@@ -44,19 +47,19 @@ tData createData(int tipo)
 
 tData createStr(char *s)
 {
-	tData nvo = createData(STR);
+	tData nvo = createData(NODE_STR);
 	nvo->cad = load2(s);
 	return nvo;
 }
 tData createInt(int value)
 {
-	tData nvo = createData(INT);
+	tData nvo = createData(NODE_INT);
 	nvo->value = value;
 	return nvo;
 }
 tData createDouble(double real)
 {
-	tData nvo = createData(DOUBLE);
+	tData nvo = createData(NODE_DOUBLE);
 	nvo->real = real;
 	return nvo;
 }
@@ -68,7 +71,7 @@ tData createBool(char *s)
 		return NULL;
 	}
 	int i, b;
-	tData nvo = createData(BOOL);
+	tData nvo = createData(NODE_BOOL);
 
 	char *_true = "true";
 	i = 0;
@@ -104,11 +107,11 @@ tData createBool(char *s)
 }
 
 /*==========================================================================*/
-/*								GETTER Y SETTERS							*/
+/*								GETTER Y NODE_SETTERS							*/
 /*==========================================================================*/
 tData get_dato(tData a)
 {
-	if (get_tipo(a) == LIST || get_tipo(a) == SET)
+	if (get_tipo(a) == NODE_LIST || get_tipo(a) == NODE_SET)
 	{
 		return a->dato;
 	}
@@ -120,7 +123,7 @@ tData get_dato(tData a)
 }
 tData get_next(tData a)
 {
-	if (get_tipo(a) == LIST || get_tipo(a) == SET)
+	if (get_tipo(a) == NODE_LIST || get_tipo(a) == NODE_SET)
 	{
 		return a->sig;
 	}
@@ -137,9 +140,9 @@ void set_next(tData *node, tData next)
 		printf("error en set_next puntero null");
 		return;
 	}
-	if(get_tipo(*node) != SET && get_tipo(*node) != LIST)
+	if(get_tipo(*node) != NODE_SET && get_tipo(*node) != NODE_LIST)
 	{
-		printf("set_next solo funciona para nodotipo LIST SET");
+		printf("set_next solo funciona para nodotipo NODE_LIST NODE_SET");
 		return;
 	}
 	(*node)->sig = next;
@@ -151,9 +154,9 @@ void set_dato(tData *node, tData dato)
 		printf("error en set_dato puntero null");
 		return;
 	}
-	if(get_tipo(*node) != SET && get_tipo(*node) != LIST)
+	if(get_tipo(*node) != NODE_SET && get_tipo(*node) != NODE_LIST)
 	{
-		printf("set_dato solo funciona para nodotipo LIST SET");
+		printf("set_dato solo funciona para nodotipo NODE_LIST NODE_SET");
 		return;
 	}
 	(*node)->dato = dato;
@@ -178,10 +181,10 @@ int get_bool_value(tData a){
 	int bool_value;
 	switch (get_tipo(a))
 	{
-	case INT: case BOOL:
+	case NODE_INT: case NODE_BOOL:
 		bool_value = get_value(a);
 		break;
-	case DOUBLE:
+	case NODE_DOUBLE:
 		if(get_real(a) == 0.0)
 		{
 			bool_value = 0;
@@ -191,10 +194,10 @@ int get_bool_value(tData a){
 			bool_value = 1;
 		}
 		break;
-	case STR:
+	case NODE_STR:
 		bool_value = 1;
 		break;
-	case LIST: case SET:
+	case NODE_LIST: case NODE_SET:
 		if(get_dato(a) == NULL)
 		{
 			return 0;
@@ -219,16 +222,16 @@ int get_value(tData a)
 		printf("\nQuiere obtener un valor de un tdata vacio.\n");
 		exit(1);
 	}
-	if(get_tipo(a) != INT && get_tipo(a) != BOOL)
+	if(get_tipo(a) != NODE_INT && get_tipo(a) != NODE_BOOL)
 	{
-		printf("error en get_value solo para nodotipo INT o BOOL\n");
+		printf("error en get_value solo para nodotipo NODE_INT o NODE_BOOL\n");
 		return 0;
 	}
 	return a->value;
 }
 double get_real(tData a)
 {
-	if (get_tipo(a) != DOUBLE)
+	if (get_tipo(a) != NODE_DOUBLE)
 	{
 		printf("error %d no tiene campo real", get_tipo(a));
 		return 0;
@@ -240,7 +243,7 @@ double get_real(tData a)
 }
 str get_cad(tData a)
 {
-	if (get_tipo(a) != STR)
+	if (get_tipo(a) != NODE_STR)
 	{
 		printf("error %d no tiene campo cad", get_tipo(a));
 		return 0;
@@ -261,11 +264,11 @@ tData sumaData(tData a, tData b)
 		printf("punteros nulos en sumaData");
 		return NULL;
 	}
-	if (a->tipoNodo == DOUBLE && b->tipoNodo == DOUBLE)
+	if (a->tipoNodo == NODE_DOUBLE && b->tipoNodo == NODE_DOUBLE)
 		return createDouble(a->real + b->real);
-	if (a->tipoNodo == DOUBLE && b->tipoNodo == INT)
+	if (a->tipoNodo == NODE_DOUBLE && b->tipoNodo == NODE_INT)
 		return createDouble(a->real + b->value);
-	if (a->tipoNodo == INT && b->tipoNodo == DOUBLE)
+	if (a->tipoNodo == NODE_INT && b->tipoNodo == NODE_DOUBLE)
 		return createDouble(a->real + b->value);
 	return createInt(a->value + b->value);
 }
@@ -276,11 +279,11 @@ tData restaData(tData a, tData b)
 		printf("punteros nulos en restaData");
 		return NULL;
 	}
-	if (a->tipoNodo == DOUBLE && b->tipoNodo == DOUBLE)
+	if (a->tipoNodo == NODE_DOUBLE && b->tipoNodo == NODE_DOUBLE)
 		return createDouble(a->real - b->real);
-	if (a->tipoNodo == DOUBLE && b->tipoNodo == INT)
+	if (a->tipoNodo == NODE_DOUBLE && b->tipoNodo == NODE_INT)
 		return createDouble(a->real - b->value);
-	if (a->tipoNodo == INT && b->tipoNodo == DOUBLE)
+	if (a->tipoNodo == NODE_INT && b->tipoNodo == NODE_DOUBLE)
 		return createDouble(a->real - b->value);
 	return createInt(a->value - b->value);
 }
@@ -291,11 +294,11 @@ tData prodData(tData a, tData b)
 		printf("punteros nulos en prodData");
 		return NULL;
 	}
-	if (a->tipoNodo == DOUBLE && b->tipoNodo == DOUBLE)
+	if (a->tipoNodo == NODE_DOUBLE && b->tipoNodo == NODE_DOUBLE)
 		return createDouble(a->real * b->real);
-	if (a->tipoNodo == DOUBLE && b->tipoNodo == INT)
+	if (a->tipoNodo == NODE_DOUBLE && b->tipoNodo == NODE_INT)
 		return createDouble(a->real * b->value);
-	if (a->tipoNodo == INT && b->tipoNodo == DOUBLE)
+	if (a->tipoNodo == NODE_INT && b->tipoNodo == NODE_DOUBLE)
 		return createDouble(a->real * b->value);
 	return createInt(a->value * b->value);
 }
@@ -306,11 +309,11 @@ tData cocData(tData a, tData b)
 		printf("punteros nulos en divData");
 		return NULL;
 	}
-	if (a->tipoNodo == DOUBLE && b->tipoNodo == DOUBLE)
+	if (a->tipoNodo == NODE_DOUBLE && b->tipoNodo == NODE_DOUBLE)
 		return createDouble(a->real / b->real);
-	if (a->tipoNodo == DOUBLE && b->tipoNodo == INT)
+	if (a->tipoNodo == NODE_DOUBLE && b->tipoNodo == NODE_INT)
 		return createDouble(a->real / b->value);
-	if (a->tipoNodo == INT && b->tipoNodo == DOUBLE)
+	if (a->tipoNodo == NODE_INT && b->tipoNodo == NODE_DOUBLE)
 		return createDouble(a->real / b->value);
 	return createInt(a->value / b->value);
 }
@@ -333,10 +336,10 @@ tData compara_mayor(tData A, tData B){
 	
 	switch (get_tipo(A))
 	{
-	case INT: nuevo = (get_value(A) > get_value(B)) ? createBool("true") : createBool("false"); break;
-	case DOUBLE: nuevo = (get_real(A) > get_real(B)) ?  createBool("true"): createBool("false"); break;
+	case NODE_INT: nuevo = (get_value(A) > get_value(B)) ? createBool("true") : createBool("false"); break;
+	case NODE_DOUBLE: nuevo = (get_real(A) > get_real(B)) ?  createBool("true"): createBool("false"); break;
 	
-	case SET: case LIST: case BOOL:
+	case NODE_SET: case NODE_LIST: case NODE_BOOL:
 	{
 		printf("Error: No se pueden comparar usando mayor las estos tipos de datos \n");
 		break;
@@ -362,10 +365,10 @@ tData compara_menor(tData A, tData B)
 	
 	switch (get_tipo(A))
 	{
-	case INT: nuevo = (get_value(A) < get_value(B)) ? createBool("true") : createBool("false"); break;
-	case DOUBLE: nuevo = (get_real(A) < get_real(B)) ?  createBool("true"): createBool("false"); break;
+	case NODE_INT: nuevo = (get_value(A) < get_value(B)) ? createBool("true") : createBool("false"); break;
+	case NODE_DOUBLE: nuevo = (get_real(A) < get_real(B)) ?  createBool("true"): createBool("false"); break;
 	
-	case SET: case LIST: case BOOL:
+	case NODE_SET: case NODE_LIST: case NODE_BOOL:
 	{
 		printf("Error: No se pueden comparar usando menor las estos tipos de datos \n");
 		break;
@@ -390,10 +393,10 @@ tData compara_mayorigual(tData A, tData B)
 	
 	switch (get_tipo(A))
 	{
-	case INT: nuevo = (get_value(A) >= get_value(B)) ? createBool("true") : createBool("false"); break;
-	case DOUBLE: nuevo = (get_real(A) >= get_real(B)) ?  createBool("true"): createBool("false"); break;
+	case NODE_INT: nuevo = (get_value(A) >= get_value(B)) ? createBool("true") : createBool("false"); break;
+	case NODE_DOUBLE: nuevo = (get_real(A) >= get_real(B)) ?  createBool("true"): createBool("false"); break;
 	
-	case SET: case LIST: case BOOL:
+	case NODE_SET: case NODE_LIST: case NODE_BOOL:
 	{
 		printf("Error: No se pueden comparar usando mayor-igual las estos tipos de datos \n");
 		break;
@@ -417,10 +420,10 @@ tData compara_menorigual(tData A, tData B){
 	
 	switch (get_tipo(A))
 	{
-	case INT: nuevo = (get_value(A) <= get_value(B)) ? createBool("true") : createBool("false"); break;
-	case DOUBLE: nuevo = (get_real(A) <= get_real(B)) ?  createBool("true"): createBool("false"); break;
+	case NODE_INT: nuevo = (get_value(A) <= get_value(B)) ? createBool("true") : createBool("false"); break;
+	case NODE_DOUBLE: nuevo = (get_real(A) <= get_real(B)) ?  createBool("true"): createBool("false"); break;
 	
-	case SET: case LIST: case BOOL:
+	case NODE_SET: case NODE_LIST: case NODE_BOOL:
 	{
 		printf("Error: No se pueden comparar usando menor-igual las estos tipos de datos \n");
 		break;
@@ -446,14 +449,14 @@ tData compara_igual(tData A, tData B)
 	
 	switch (get_tipo(A))
 	{
-	case INT: case BOOL: nuevo = (get_value(A) == get_value(B)) ? createBool("true") : createBool("false"); break;
-	case DOUBLE: nuevo = (get_real(A) == get_real(B)) ?  createBool("true"): createBool("false"); break;
-	case SET: case LIST: 
+	case NODE_INT: case NODE_BOOL: nuevo = (get_value(A) == get_value(B)) ? createBool("true") : createBool("false"); break;
+	case NODE_DOUBLE: nuevo = (get_real(A) == get_real(B)) ?  createBool("true"): createBool("false"); break;
+	case NODE_SET: case NODE_LIST: 
 	{
 		nuevo = (Igualdad(A,B) == 0) ? createBool("true") : createBool("false");
 		break;
 	}
-	case STR:
+	case NODE_STR:
 		{
 			nuevo = (!compStr(get_cad(A), get_cad(B))) ? createBool("true") : createBool("false");
 		}
@@ -478,14 +481,14 @@ tData compara_distinto(tData A, tData B)
 	
 	switch (get_tipo(A))
 	{
-	case INT: case BOOL: nuevo = (get_value(A) != get_value(B)) ? createBool("true") : createBool("false"); break;
-	case DOUBLE: nuevo = (get_real(A) != get_real(B)) ?  createBool("true"): createBool("false"); break;
-	case SET: case LIST: 
+	case NODE_INT: case NODE_BOOL: nuevo = (get_value(A) != get_value(B)) ? createBool("true") : createBool("false"); break;
+	case NODE_DOUBLE: nuevo = (get_real(A) != get_real(B)) ?  createBool("true"): createBool("false"); break;
+	case NODE_SET: case NODE_LIST: 
 	{
 		nuevo = (Igualdad(A,B) == 1) ? createBool("true") : createBool("false");
 		break;
 	}
-	case STR:
+	case NODE_STR:
 		{
 			nuevo = (compStr(get_cad(A), get_cad(B))) ? createBool("true") : createBool("false");
 		}
@@ -509,19 +512,19 @@ void mostrarData(tData nodo)
 
 	switch (nodo->tipoNodo)
 	{
-	case STR:
+	case NODE_STR:
 		print(nodo->cad);
 		break;
-	case INT:
+	case NODE_INT:
 		printf("%d", nodo->value);
 		break;
-	case DOUBLE:
+	case NODE_DOUBLE:
 		printf("%f", nodo->real);
 		break;
-	case BOOL:
+	case NODE_BOOL:
 		(nodo->value == 0) ? printf("false") : printf("true");
 		break;
-	case LIST:
+	case NODE_LIST:
 		printf("[");
 
 		tData aux;
@@ -536,7 +539,7 @@ void mostrarData(tData nodo)
 		printf("]");
 
 		break;
-	case SET:
+	case NODE_SET:
 		printf("{");
 
 		tData aux2;
@@ -560,7 +563,7 @@ void agregarData(tData *cabe, tData elem)
 		printf("No se puede agregar un elemento a un espacio de memoria no asignado");
 		return;
 	}
-	if (get_tipo(cab) != SET && get_tipo(cab) != LIST)
+	if (get_tipo(cab) != NODE_SET && get_tipo(cab) != NODE_LIST)
 	{
 		printf("No se puede agregar un elemento a un objeto que no es list o conjunto");
 		return;
@@ -573,17 +576,17 @@ void agregarData(tData *cabe, tData elem)
 	{
 		switch (cab->tipoNodo)
 		{
-		case STR:
-		case INT:
-		case DOUBLE:
-		case BOOL:
+		case NODE_STR:
+		case NODE_INT:
+		case NODE_DOUBLE:
+		case NODE_BOOL:
 			break;
-		case SET:
-		case LIST:
+		case NODE_SET:
+		case NODE_LIST:
 		{
 			tData nvo;
 
-			if (cab->tipoNodo == SET)
+			if (cab->tipoNodo == NODE_SET)
 			{
 				if (pertenece(cab, elem) == 0)
 					return;
@@ -615,13 +618,13 @@ tData copiarData(tData copiado)
 		return NULL;
 	switch (copiado->tipoNodo)
 	{
-	case INT:
+	case NODE_INT:
 		nvo = createInt(copiado->value);
 		break;
-	case DOUBLE:
+	case NODE_DOUBLE:
 		nvo = createDouble(copiado->real);
 		break;
-	case BOOL:
+	case NODE_BOOL:
 		if (get_value(copiado))
 		{
 			nvo = createBool("true");
@@ -631,17 +634,17 @@ tData copiarData(tData copiado)
 			nvo = createBool("false");
 		}
 		break;
-	case STR:
-		nvo = createData(STR);
+	case NODE_STR:
+		nvo = createData(NODE_STR);
 		nvo->cad = copyStr(copiado->cad);
 		break;
-	case LIST:
-		nvo = createData(LIST);
+	case NODE_LIST:
+		nvo = createData(NODE_LIST);
 		nvo->dato = copiarData(copiado->dato);
 		nvo->sig = copiarData(copiado->sig);
 		break;
-	case SET:
-		nvo = createData(SET);
+	case NODE_SET:
+		nvo = createData(NODE_SET);
 		nvo->dato = copiarData(copiado->dato);
 		nvo->sig = copiarData(copiado->sig);
 		break;
@@ -657,11 +660,11 @@ void freeData(tData descartado)
 
 	switch (descartado->tipoNodo)
 	{
-	case STR:
+	case NODE_STR:
 		freeString(descartado->cad);
 		break;
-	case LIST:
-	case SET:
+	case NODE_LIST:
+	case NODE_SET:
 		freeData(descartado->dato);
 		freeData(descartado->sig);
 		break;
@@ -685,15 +688,15 @@ int Igualdad(tData A, tData B)
 
 	switch (A->tipoNodo)
 	{
-	case STR:
+	case NODE_STR:
 		return compStr(A->cad, B->cad);
 		break;
-	case BOOL:
-	case INT:
+	case NODE_BOOL:
+	case NODE_INT:
 		return !(get_value(A) == get_value(B));
-	case DOUBLE:
+	case NODE_DOUBLE:
 		return !(get_real(A) == get_real(B));
-	case SET:
+	case NODE_SET:
 	{
 		tData auxA = A;
 		while (auxA != NULL)
@@ -712,7 +715,7 @@ int Igualdad(tData A, tData B)
 		return 0; // iguales. todo A e B, todo B e A
 	}
 
-	case LIST:
+	case NODE_LIST:
 	{
 		tData auxA = A;
 		tData auxB = B;
@@ -758,7 +761,7 @@ tData Union(tData A, tData B)
 		return copiarData(A); // B es el conj => AuB = A
 	}
 
-	if (A->tipoNodo != SET || B->tipoNodo != SET)
+	if (A->tipoNodo != NODE_SET || B->tipoNodo != NODE_SET)
 		return NULL;
 
 	tData C_Cab = NULL, C_act = NULL;
@@ -767,7 +770,7 @@ tData Union(tData A, tData B)
 	while (A != NULL)
 	{
 
-		aux = createData(SET);
+		aux = createData(NODE_SET);
 		aux->dato = copiarData(A->dato);
 
 		if (C_Cab == NULL)
@@ -785,7 +788,7 @@ tData Union(tData A, tData B)
 		if ( pertenece(C_Cab, B->dato) )  // 1 si no pertence => agrega
 		{
 			
-			aux = createData(SET);
+			aux = createData(NODE_SET);
 			aux->dato = copiarData(B->dato);
 
 			if (C_Cab == NULL)
@@ -805,7 +808,7 @@ tData Interseccion(tData A, tData B)
 	if (A == NULL || B == NULL)
 		return NULL;
 
-	if (A->tipoNodo != SET || B->tipoNodo != SET)
+	if (A->tipoNodo != NODE_SET || B->tipoNodo != NODE_SET)
 		return NULL;
 	tData C_Cab = NULL, C_act = NULL;
 	tData aux;
@@ -815,7 +818,7 @@ tData Interseccion(tData A, tData B)
 		if (!pertenece(B, A->dato))
 		{
 
-			aux = createData(SET);
+			aux = createData(NODE_SET);
 			aux->dato = copiarData(A->dato);
 
 			if (C_Cab == NULL)
@@ -836,7 +839,7 @@ tData Diferencia(tData A, tData B)
 	if (B == NULL)
 		return copiarData(A);
 
-	if (A->tipoNodo != SET || B->tipoNodo != SET)
+	if (A->tipoNodo != NODE_SET || B->tipoNodo != NODE_SET)
 		return NULL;
 
 	tData C_Cab = NULL, C_act = NULL;
@@ -847,7 +850,7 @@ tData Diferencia(tData A, tData B)
 		if (pertenece(B, A->dato))
 		{
 
-			aux = createData(SET);
+			aux = createData(NODE_SET);
 			aux->dato = copiarData(A->dato);
 
 			if (C_Cab == NULL)
@@ -863,7 +866,7 @@ tData Diferencia(tData A, tData B)
 }
 tData DifSimetrica(tData A, tData B)
 {
-	if (A->tipoNodo != SET || B->tipoNodo != SET)
+	if (A->tipoNodo != NODE_SET || B->tipoNodo != NODE_SET)
 		return NULL;
 
 	tData D = Diferencia(A, B);
@@ -886,7 +889,7 @@ int pertenece(tData A, tData elem)
 		//printf("pertenece recibe punteros nulos\n");
 		return 1;
 	}
-	if (A->tipoNodo != LIST && A->tipoNodo != SET){
+	if (A->tipoNodo != NODE_LIST && A->tipoNodo != NODE_SET){
 		printf("pertenece no recibe un conjunto o lista\n");
 		return 1;
 	}
@@ -928,11 +931,11 @@ int contenido(tData A, tData B)
 }
 
 /*==========================================================================*/
-/*							OPERACIONES LISTA								*/
+/*							OPERACIONES NODE_LISTA								*/
 /*==========================================================================*/
 tData concat_list(tData a, tData b)
 {
-	tData nuevo = createData(LIST);
+	tData nuevo = createData(NODE_LIST);
 	if (!a || !b)
 	{
 		printf("error concatenar_listas  de listas nulas");
@@ -965,7 +968,7 @@ void eliminar_pos(tData *l, int pos)
 		printf("Error eliminar_pos nav null");
 		return ;
 	}
-	if ( get_tipo(nav) != LIST )
+	if ( get_tipo(nav) != NODE_LIST )
 	{
 		printf("Error eliminar_pos es una operacion de listas");
 		return;
@@ -984,7 +987,7 @@ void eliminar_pos(tData *l, int pos)
 		*l = get_next(nav);
 		if (*l == NULL)
 		{ // corresponde lista vacia
-			*l = createData(LIST);
+			*l = createData(NODE_LIST);
 		}
 		//freeData(get_dato(nav));
 		//freeData(nav);
@@ -997,7 +1000,7 @@ void eliminar_pos(tData *l, int pos)
 }
 
 /*==========================================================================*/
-/*					   OPERACIONES LISTA Y CONJUNTOS						*/
+/*					   OPERACIONES NODE_LISTA Y CONJUNTOS						*/
 /*==========================================================================*/
 tData elemento_pos(tData data, int pos)
 {
@@ -1006,7 +1009,7 @@ tData elemento_pos(tData data, int pos)
 		printf("puntero nulo en elemento_pos\n");
 		return NULL;
 	}
-	if (get_tipo(data) != SET && get_tipo(data) != LIST)
+	if (get_tipo(data) != NODE_SET && get_tipo(data) != NODE_LIST)
 	{
 		printf("Error elemento_pos es una operacion de listas o conjuntos\n");
 		return NULL;
@@ -1030,7 +1033,7 @@ int tamanio(tData A)
 		return 0;
 	}
 	
-	if ( A->tipoNodo != SET && A->tipoNodo != LIST )
+	if ( A->tipoNodo != NODE_SET && A->tipoNodo != NODE_LIST )
 		return 1;
 	
 
@@ -1060,22 +1063,22 @@ tData negar_data(tData data)
 	}
 	switch (get_tipo(data))
     {
-        case STR:
+        case NODE_STR:
 		{
 			nuevo = copiarData(data);
 			break;
 		}
-		case INT: 
+		case NODE_INT: 
         {
             nuevo = createInt(-get_value(data));
             break;
         } 
-        case DOUBLE:
+        case NODE_DOUBLE:
         {
             nuevo = createDouble(-get_real(data));
             break;
         }
-        case BOOL:
+        case NODE_BOOL:
         {
             if(get_value(data))
             {
@@ -1087,16 +1090,16 @@ tData negar_data(tData data)
             }
             break;
         }
-        case LIST: 
+        case NODE_LIST: 
         {
-            nuevo = createData(LIST);
+            nuevo = createData(NODE_LIST);
 			nuevo->dato = negar_data(data->dato);
 			nuevo->sig = negar_data(data->sig);
             break;
         }         
-		case SET:
+		case NODE_SET:
 		{
-			nuevo = createData(SET);
+			nuevo = createData(NODE_SET);
 			nuevo->dato = negar_data(data->dato);
 			nuevo->sig = negar_data(data->sig);
             break;
@@ -1117,29 +1120,29 @@ tData modulo_data(tData data)
 		printf("puntero null en modulo_data\n");
 		return 0;
 	}
-	if(get_tipo(data) == BOOL)
+	if(get_tipo(data) == NODE_BOOL)
 	{
 		printf("Error en modulo_data data es de tipo bool\n");
 		return NULL;
 	}
 	switch (get_tipo(data))
 	{ 
-	case INT:
+	case NODE_INT:
 	{ 
 		modulo_data = createInt(abs(get_value(data)));
 		break;
 	}
-	case DOUBLE:
+	case NODE_DOUBLE:
 	{
 		modulo_data = createDouble(fabs(get_real(data)));
 		break;
 	}
-	case STR:
+	case NODE_STR:
 	{
 		modulo_data = createInt(1);
 		break;
 	}
-	case LIST: case SET:
+	case NODE_LIST: case NODE_SET:
 	{
 		modulo_data = createInt(tamanio(data));
 		break;
