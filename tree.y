@@ -152,3 +152,8 @@ int main(void){
     //if(yyin != stdin)  fclose(yyin);
     return 0;
 }
+
+int yyerror(char* s) {
+    fprintf(stderr, "\n[ERROR SINTÁCTICO]: %s\n", s);
+    return 0;
+}
