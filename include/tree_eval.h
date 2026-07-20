@@ -1,8 +1,8 @@
 #ifndef TREE_EVAL_H
 #define TREE_EVAL_H
 
-#include "../data.h"
-#include "include/tree_ast.h"
+#include "tree_data.h"
+#include "tree_ast.h"
 
 /*       EVAL    */
 

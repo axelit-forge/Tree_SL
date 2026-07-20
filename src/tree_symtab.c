@@ -1,6 +1,5 @@
-
-#include "include/tree_symtab.h"
-#include "include/tree_errors.h"
+#include "tree_symtab.h"
+#include "tree_errors.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

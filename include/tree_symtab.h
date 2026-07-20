@@ -1,10 +1,10 @@
 #ifndef TREE_SYMTAB_H
 #define TREE_SYMTAB_H
 
-#include "../data.h"
+#include "tree_data.h"
 #include "tree_nodetypes.h"
 #include "tree_errors.h"
-#include <../string.h>
+#include <string.h>
 
 #define NHASH 9997
 

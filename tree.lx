@@ -1,8 +1,9 @@
 %option noyywrap
 %{
-    #include "data.h"
+    #include "tree_data.h"
     #include "tree.tab.h"
-    #include "ast.h"
+    #include "tree_ast.h"
+    #include "tree_symtab.h"
     #include <string.h>
 %}
 

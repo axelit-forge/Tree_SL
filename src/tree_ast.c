@@ -1,5 +1,5 @@
-#include "include/tree_ast.h"
-#include "include/tree_errors.h"
+#include "tree_ast.h"
+#include "tree_errors.h"
 #include <stdlib.h>
 
 // Todas van SIN static porque Bison las necesita invocar al reducir reglas

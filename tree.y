@@ -2,8 +2,8 @@
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
-    #include "data.h"
 
+    #include "tree_data.h"
     #include "tree_nodetypes.h"
     #include "tree_errors.h"
     #include "tree_ast.h"

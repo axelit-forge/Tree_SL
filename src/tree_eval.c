@@ -1,7 +1,8 @@
-#include "include/tree_eval.h"
-#include "include/tree_ast.h"
-#include "include/tree_symtab.h"
-#include "include/tree_errors.h"
+#include "tree_eval.h"
+#include "tree_ast.h"
+#include "tree_symtab.h"
+#include "tree_errors.h"
+#include "tree_data.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -54,43 +55,162 @@ static tData eval_relacional(int op, tData l, tData r) {
 
 
 static tData eval_unario(int op, tData l) {
-    // TODO: Migrar MENOS_UNARIO y MODULO
-    return NULL;
+    if (!l) {
+        tree_notify(ERR_SYS_NULL_POINTER, "en eval_unario");
+        return NULL;
+    }
+
+    switch (op) {
+        case NODE_MENOS_UNARIO:
+            return negarData(l);
+        case NODE_MODULO:
+            return moduloData(l);
+        default:
+            return NULL;
+    }
 }
 
 static tData eval_logica(int op, struct ast *a) {
-    // TODO: Migrar AND, OR, NOT e implementar cortocircuitos si querés
-    return NULL;
+    if (!a) {
+        tree_notify(ERR_SYS_NULL_POINTER, "Árbol nulo en eval_logica");
+        return NULL;
+    }
+
+    struct ast *left = a->l;
+    struct ast *right = a->r;
+
+    if (op == NODE_NOT) {
+        if (!right) {
+            tree_notify(ERR_SYS_NULL_POINTER, "Operando derecho nulo en NOT");
+            return NULL;
+        }
+        tData res_r = eval(right);
+        return get_bool_value(res_r) ? createBool("false") : createBool("true");
+    }
+
+    if (!left || !right) {
+        tree_notify(ERR_SYS_NULL_POINTER, "Faltan operandos en operación lógica binaria");
+        return NULL;
+    }
+
+    tData res_l = eval(left);
+    tData res_r = eval(right);
+
+    switch (op) {
+        case NODE_AND:
+            if (get_bool_value(res_l) && get_bool_value(res_r)) {
+                return createBool("true");
+            }
+            return createBool("false");
+
+        case NODE_OR:
+            if (get_bool_value(res_l) || get_bool_value(res_r)) {
+                return createBool("true");
+            }
+            return createBool("false");
+
+        default:
+            return NULL;
+    }
 }
 
 static tData eval_operacion_lista(int op, struct ast *a) {
-    // TODO: Migrar KICK, ADD, CONCAT, TAKE, GET y sus validaciones de lista
-    return NULL;
-}
+    if (!a || !a->l || !a->r) {
+        tree_notify(ERR_SYS_NULL_POINTER, "Operandos nulos en eval_operacion_lista");
+        return NULL;
+    }
 
+    tData aux_result = eval(a->l);
+    tData list_result = eval(a->r);
+
+    if (!aux_result || !list_result) {
+        tree_notify(ERR_SYS_NULL_POINTER, "Subexpresión evaluada como nula en lista");
+        return NULL;
+    }
+
+    switch (op) {
+        case NODE_KICK:   return kickData(aux_result, list_result);
+        case NODE_ADD:    return addData(aux_result, list_result);
+        case NODE_TAKE:   return takeData(aux_result, list_result);
+        case NODE_CONCAT: return concatData(aux_result, list_result);
+        case NODE_GET:    return getData(aux_result, list_result);
+        default:
+            tree_notify(ERR_RUN_GENERIC_EXECUTION, "Operación de lista no soportada");
+            return NULL;
+    }
+}
 static tData eval_operacion_conjunto(int op, struct ast *a) {
-    // TODO: Migrar UNION, INTER, DIFF, CONTAINS, IN y validaciones de conjunto
-    return NULL;
+    if (!a || !a->l || !a->r) {
+        tree_notify(ERR_SYS_NULL_POINTER, "Operandos nulos en eval_operacion_conjunto");
+        return NULL;
+    }
+
+    tData conj_1 = eval(a->l);
+    tData conj_2 = eval(a->r);
+
+    if (!conj_1 || !conj_2) {
+        tree_notify(ERR_SYS_NULL_POINTER, "Subexpresión evaluada como nula en conjunto");
+        return NULL;
+    }
+
+    switch (op) {
+        case NODE_IN:       return inData(conj_1, conj_2);
+        case NODE_UNION:    return unionData(conj_1, conj_2);
+        case NODE_DIFF:     return diffData(conj_1, conj_2);
+        case NODE_INTER:    return interData(conj_1, conj_2);
+        case NODE_CONTAINS: return containsData(conj_1, conj_2);
+        default:
+            tree_notify(ERR_RUN_GENERIC_EXECUTION, "Operación de conjunto no soportada");
+            return NULL;
+    }
 }
 
-tData eval_flow(struct flow *a) {
+static tData eval_flow(struct flow *a) {
     // TODO: Migrar las estructuras IF, WHILE, FORALL, FORANY
     return NULL;
 }
 
-tData eval_memory_ast(struct memory_ast *arbol) {
+static tData eval_memory_ast(struct memory_ast *arbol) {
     // TODO: Migrar ASIGNACION, VAR_REF, FN_CALL, ASIGNACIONMULTI
     return NULL;
 }
 
-tData eval_list(struct ast *a) {
-    // TODO: Migrar la evaluación de literales de lista [exps]
-    return NULL;
+static tData eval_list(struct ast *a) {
+    if (!a) return NULL;
+
+    tData nuevo = createData(NODE_LIST);
+    if (!a->l) {
+        return nuevo;
+    }
+
+    struct ast* nav = a->l;
+    while (get_nodetype(nav) == NODE_LIST_OF_AST) {
+        tData item = eval(nav->l);
+        agregarData(&nuevo, item);
+        nav = nav->r;
+    }
+    tData ultimo_item = eval(nav);
+    agregarData(&nuevo, ultimo_item);
+    return nuevo;
 }
 
-tData eval_set(struct ast *a) {
-    // TODO: Migrar la evaluación de literales de conjunto {exps}
-    return NULL;
+static tData eval_set(struct ast *a) {
+    if (!a) return NULL;
+
+    tData nuevo = createData(NODE_SET);
+    if (!a->l) {
+        return nuevo;
+    }
+
+    struct ast *nav = a->l;
+    while (get_nodetype(nav) == NODE_LIST_OF_AST) {
+        tData item = eval(nav->l);
+        agregarData(&nuevo, item);
+        nav = nav->r;
+    }
+    tData ultimo_item = eval(nav);
+    agregarData(&nuevo, ultimo_item);
+    return nuevo;
 }
 
 /*=======================================================================*/

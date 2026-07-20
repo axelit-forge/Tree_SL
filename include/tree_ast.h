@@ -1,7 +1,7 @@
 #ifndef TREE_AST_H
 #define TREE_AST_H
 
-#include "../data.h"
+#include "tree_data.h"
 #include "tree_errors.h"
 #include "tree_nodetypes.h"
 
@@ -30,7 +30,6 @@ struct memory_ast {
     struct ast* a; 
 };
 
-// Constructores originales de tu ast.c
 struct ast* newast(int nodoValue, struct ast* left, struct ast* right, tData data);
 struct ast* newflow(int nodetype, struct ast* cond, struct ast* iterable, struct ast* tblock, struct ast* fblock, struct symbol* s);
 struct ast* newmemory_ast(int nodetype, struct symbol* s, struct ast* a);
