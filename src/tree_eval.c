@@ -166,13 +166,136 @@ static tData eval_operacion_conjunto(int op, struct ast *a) {
 }
 
 static tData eval_flow(struct flow *a) {
-    // TODO: Migrar las estructuras IF, WHILE, FORALL, FORANY
-    return NULL;
+    if (!a) {
+        tree_notify(ERR_SYS_NULL_POINTER, "Estructura flow nula en eval_flow");
+        return NULL;
+    }
+
+    struct ast *cond = a->cond;
+    struct ast *iterable = a->iterable;
+    struct ast *tblock = a->tblock;
+    struct ast *fblock = a->fblock;
+    struct symbol *s = a->s;
+
+    tData nuevo = NULL;
+
+    switch (get_nodetype((struct ast *)a)) {
+        case NODE_IF: {
+            if (get_bool_value(eval(cond))) {
+                nuevo = eval(tblock);
+            } else if (fblock != NULL) {
+                nuevo = eval(fblock);
+            }
+            break;
+        }
+        case NODE_WHILE: {
+            while (get_bool_value(eval(cond))) {
+                nuevo = eval(tblock);
+            }
+            break;
+        }
+        case NODE_FORALL: {
+            tData collection = copiarData(eval(iterable));
+            tData iterator = collection;
+
+            while (iterator) {
+                tData elemento = get_dato(iterator);
+                int booleano = cond ? get_bool_value(eval(cond)) : 1;
+
+                if (booleano != 0) {
+                    s->data = copiarData(elemento);
+                    nuevo = eval(tblock);
+                }
+                iterator = get_next(iterator);
+            }
+            freeData(collection);
+            break;
+        }
+        case NODE_FORANY: {
+            tData collection = copiarData(eval(iterable));
+            tData iterator = collection;
+            int found = 0;
+
+            while (iterator && found == 0) {
+                tData elemento = get_dato(iterator);
+                int booleano = cond ? get_bool_value(eval(cond)) : 1;
+
+                if (booleano != 0) {
+                    found = 1;
+                    s->data = copiarData(elemento);
+                    nuevo = eval(tblock);
+                }
+                iterator = get_next(iterator);
+            }
+            freeData(collection);
+            break;
+        }
+        default:
+            break;
+    }
+    return nuevo;
 }
 
 static tData eval_memory_ast(struct memory_ast *arbol) {
-    // TODO: Migrar ASIGNACION, VAR_REF, FN_CALL, ASIGNACIONMULTI
-    return NULL;
+    if (!arbol) {
+        tree_notify(ERR_SYS_NULL_POINTER, "Estructura memory_ast nula");
+        return NULL;
+    }
+
+    tData nuevo = NULL;
+    struct symbol* s = arbol->s;
+    struct ast* a    = arbol->a;
+
+    switch (get_nodetype((struct ast*)arbol)) {
+        case NODE_ASIGNACIONMULTI: {
+            tData coleccion_fuente = s->data;
+
+            if (get_tipo(coleccion_fuente) != NODE_LIST && get_tipo(coleccion_fuente) != NODE_SET) {
+                tree_notify(ERR_SEM_TYPE_MISMATCH, "Desestructuración múltiple requiere lista o conjunto");
+                return NULL;
+            }
+
+            struct symlist* listaArgs = s->args;
+            int tamArgs = compute_size(s->args);
+            int tam = tamanio(coleccion_fuente);
+
+            if (tamArgs != tam) {
+                tree_notify(ERR_COL_INDEX_OUT_OF_BOUNDS, "Cantidad de variables no coincide con tamaño de colección");
+                return NULL;
+            }
+
+            while (listaArgs) {
+                // Se asigna la data del nodo interno al símbolo de la lista de argumentos
+                if (listaArgs->s) {
+                    listaArgs->s->data = copiarData(get_dato(coleccion_fuente));
+                }
+                listaArgs = listaArgs->next;
+                coleccion_fuente = get_next(coleccion_fuente);
+            }
+            break;
+        }
+
+        case NODE_ASIGNACION: {
+            nuevo = eval(a);
+            s->data = copiarData(nuevo);
+            break;
+        }
+        case NODE_VAR_REF: {
+            nuevo = copiarData(s->data);
+            if (nuevo == NULL) {
+                tree_notify(ERR_GENERAL, "Se intentó acceder a una variable no inicializada");
+            }
+            break;
+        }
+        case NODE_FN_CALL:
+            // A implementar a futuro con scopes
+            break;
+
+        default:
+            break;
+    }
+
+    return nuevo;
 }
 
 static tData eval_list(struct ast *a) {

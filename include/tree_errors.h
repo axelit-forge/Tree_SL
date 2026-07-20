@@ -35,7 +35,8 @@ typedef enum {
     // 400. ERRORES DE RUNTIME / EJECUCIÓN GENERAL
     ERR_RUN_START = 400,
     ERR_RUN_GENERIC_EXECUTION,
-    ERR_RUN_DIVISION_BY_ZERO
+    ERR_RUN_DIVISION_BY_ZERO,
+    ERR_GENERAL
 } TreeErrorCode;
 
 void tree_notify(TreeErrorCode code, const char* extra_info);
