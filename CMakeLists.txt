@@ -6,7 +6,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 
 include_directories(
         include
-        src
+        common
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
@@ -15,8 +15,8 @@ find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 
 
-bison_target(Parser tree.y ${CMAKE_CURRENT_BINARY_DIR}/tree.tab.c)
-flex_target(Scanner tree.lx ${CMAKE_CURRENT_BINARY_DIR}/lex.yy.c)
+bison_target(Parser src/tree.y ${CMAKE_CURRENT_BINARY_DIR}/tree.tab.c)
+flex_target(Scanner src/tree.lx ${CMAKE_CURRENT_BINARY_DIR}/lex.yy.c)
 add_flex_bison_dependency(Scanner Parser)
 
 
@@ -29,6 +29,8 @@ set(SOURCES
         src/tree_symtab.c
         src/tree_data.c
         string.c
+        common/arena.c
+        common/string_view.c
 )
 
 add_executable(tree ${SOURCES})

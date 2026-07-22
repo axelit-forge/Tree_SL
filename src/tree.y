@@ -51,25 +51,25 @@
 
 %%
 tree: 
-| T_PESOS_TREE EOL interpreter_tree
+ T_PESOS_TREE EOL interpreter_tree
 | defs main
 ;
 
-defs:         { printf("deriva epsilon defs\n"); }  
-| defs fn_def { printf("deriva fn_def  defs\n"); }
-; 
+defs:
+| defs fn_def
+;
 main: T_MAIN ':' block T_ENDMAIN { printf("output: "); mostrarData(eval($3)); printf("\nEjecion finalizada\n"); }
-; 
+;
 
 interpreter_tree:
 | interpreter_tree exp    EOL { printf("=> "); mostrarData(eval($2)); printf("\n"); }
 | interpreter_tree stm    EOL { printf("=> "); mostrarData(eval($2)); printf("\n"); }
-| interpreter_tree fn_def EOL { printf("Funcion Definida.\n"); }  
-; 
+| interpreter_tree fn_def EOL { printf("Funcion Definida.\n"); }
+;
 
 
-block:      { $$ = NULL; printf("deriva epsilon block\n"); }
-| stm block { $$ = ($2 == NULL)? $1: newast(NODE_BLOCK, $1, $2, NULL); printf("deriva stm block\n"); }
+block:      { $$ = NULL; }
+| stm block { $$ = ($2 == NULL)? $1: newast(NODE_BLOCK, $1, $2, NULL); }
 ;
 
 stm: exp ';'  { $$ = $1; }
@@ -150,10 +150,5 @@ fn_def: T_FN ID '(' list_id ')' ':' stm T_ENDFN { add_definition($2, $4, $7); }
 int main(void){
     yyparse();
     //if(yyin != stdin)  fclose(yyin);
-    return 0;
-}
-
-int yyerror(char* s) {
-    fprintf(stderr, "\n[ERROR SINTÁCTICO]: %s\n", s);
     return 0;
 }

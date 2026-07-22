@@ -34,3 +34,8 @@ void tree_notify(TreeErrorCode code, const char* extra_info) {
     if (extra_info) fprintf(stderr, "   Contexto: %s\n", extra_info);
     if (is_fatal) { fprintf(stderr, "[FATAL]: Abortando programa.\n"); exit(1); }
 }
+
+int yyerror(char* s) {
+    fprintf(stderr, "\n[ERROR SINTÁCTICO]: %s\n", s);
+    return 0;
+}
