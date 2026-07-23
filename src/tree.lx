@@ -28,6 +28,7 @@ EXP ([eE][+-]?[0-9]+)
 "+" | 
 "-" | 
 "*" |
+"%" |
 "/" {  return yytext[0]; }
 
 ">"   { return T_MAYOR; }
@@ -50,6 +51,7 @@ end       { return T_END;     }
 forall    { return T_FORALL;  }
 forany    { return T_FORANY;  }
 
+print   { return T_PRINT;      }
 fn      { return T_FN;         }
 endfn   { return T_ENDFN;      }
 main    { return T_MAIN;       }

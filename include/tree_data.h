@@ -54,7 +54,8 @@ tData restaData(tData a, tData b);
 tData prodData(tData a, tData b);
 tData cocData(tData a, tData b);
 tData negar_data(tData a);
-tData moduloData(tData a);
+tData moduloData(tData a, tData b);
+tData absData(tData a);
 
 /* ======================================================================= */
 /* 3. OPERACIONES RELACIONALES                                             */
@@ -97,6 +98,5 @@ tData containsData(tData conj_a, tData conj_b);
 
 // Extras
 tData negarData (tData a);
-tData moduloData (tData a);
 
 #endif

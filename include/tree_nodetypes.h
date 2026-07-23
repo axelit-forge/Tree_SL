@@ -39,6 +39,7 @@ typedef enum {
     NODE_WHILE,
     NODE_FORALL,
     NODE_FORANY,
+    NODE_PRINT,
 
     // --- Memoria y Funciones ---
     NODE_VAR_REF,

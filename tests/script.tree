@@ -1,10 +1,10 @@
 main:
-usuarios = {"admin", "guest", "axel", "isa"};
-mencionados = [];
+print("--- Test de Modulo y Print ---");
 
-forall (u in usuarios | u != "admin") do
-    add u to mencionados;
-    u;
-end
-mencionados;
+c = 10 % 3;
+print(c); // Imprime 1
+
+forall (x in {1, 2, 3, 4, 5} | x % 2 == 0) do print(x); end
+
+
 endmain

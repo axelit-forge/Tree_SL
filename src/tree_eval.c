@@ -25,6 +25,7 @@ static tData eval_aritmetica(int op, tData l, tData r) {
         case '-': return restaData(l, r);
         case '*': return prodData(l, r);
         case '/': return cocData(l, r);
+        case '%': return moduloData(l, r);
         default:  return NULL;
     }
 }
@@ -58,7 +59,11 @@ static tData eval_unario(int op, tData l) {
         case NODE_MENOS_UNARIO:
             return negarData(l);
         case NODE_MODULO:
-            return moduloData(l);
+            return absData(l);
+        case NODE_PRINT:
+            mostrarData(l);
+            printf("\n");
+            return NULL;
         default:
             return NULL;
     }
@@ -359,10 +364,10 @@ tData eval(struct ast *a) {
     }
     switch (type)
     {
-        case '+': case '-': case '*': case '/':
+        case '+': case '-': case '*': case '/': case '%':
             return eval_aritmetica(type, eval(a->l), eval(a->r));
 
-        case NODE_MENOS_UNARIO: case NODE_MODULO:
+        case NODE_MENOS_UNARIO: case NODE_MODULO: case NODE_PRINT:
             return eval_unario(type, eval(a->l));
 
         case NODE_MAYOR: case NODE_MENOR: case NODE_MAYOR_IGUAL: case NODE_MENOR_IGUAL:

@@ -813,7 +813,7 @@ tData negarData(tData a) {
     return createInt(-(a->value));
 }
 
-tData moduloData(tData a) {
+tData absData(tData a) {
     if (!a) {
         tree_notify(ERR_SYS_NULL_POINTER, "en modulo_data");
         return NULL;
@@ -833,6 +833,17 @@ tData moduloData(tData a) {
         return createInt(tamanioData(a));
     }
 
+    tree_notify(ERR_SEM_TYPE_MISMATCH, "El operador de absoluto / longitud (|) no es válido para este tipo de dato");
+    return NULL;
+}
+tData moduloData (tData a, tData b) {
+    if (a->tipoNodo == NODE_INT && b->tipoNodo == NODE_INT) {
+        if (b->value == 0) {
+            tree_notify(ERR_RUN_DIVISION_BY_ZERO, "Módulo por cero");
+            return NULL;
+        }
+        return createInt(a->value % b->value);
+    }
     tree_notify(ERR_SEM_TYPE_MISMATCH, "El operador de módulo / longitud (|) no es válido para este tipo de dato");
     return NULL;
 }

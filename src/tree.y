@@ -37,6 +37,7 @@
 %token T_IF T_ELSE T_ENDIF T_WHILE T_DO T_END T_FORALL T_FORANY
 %token T_FN T_ENDFN 
 %token T_MAIN T_ENDMAIN T_PESOS_TREE
+%token T_PRINT
 
 %token <td> NUM_INT ATOM NUM_DOUBLE  T_BOOL
 %token <s> ID
@@ -53,7 +54,7 @@
 %left T_CONCAT
 %left T_TO
 %left '+' '-'
-%left '*' '/'
+%left '*' '/' '%'
 %right T_MENOS_UNARIO
 
 %type <a> exp stm block
@@ -76,6 +77,7 @@ main: T_MAIN ':' block T_ENDMAIN { printf("output: "); mostrarData(eval($3)); pr
 ;
 
 interpreter_tree:
+| interpreter_tree        EOL {                   }
 | interpreter_tree exp    EOL { procesar_expresion($2); }
 | interpreter_tree stm    EOL { procesar_expresion($2); }
 | interpreter_tree fn_def EOL { printf("Funcion Definida.\n"); arenaReset(&astArena); }
@@ -87,6 +89,8 @@ block:      { $$ = NULL; }
 ;
 
 stm: exp ';'  { $$ = $1; }
+| T_PRINT exp ';'                                     { $$ = newast(NODE_PRINT, $2, NULL, NULL); }
+| T_PRINT '(' exp ')' ';'                             { $$ = newast(NODE_PRINT, $3, NULL, NULL); }
 | T_IF '(' exp ')' block T_ENDIF                      { $$ = newflow(NODE_IF,     $3, NULL, $5 , NULL, NULL); }
 | T_IF '(' exp ')' block T_ELSE  block T_ENDIF        { $$ = newflow(NODE_IF,     $3, NULL, $5 , $7  , NULL); }
 
@@ -108,6 +112,7 @@ exp: NUM_INT    { $$ = newast(NODE_INT   , NULL, NULL, $1); }
 | exp '-' exp   { $$ = newast('-',$1,$3,NULL); }
 | exp '*' exp   { $$ = newast('*',$1,$3,NULL); }
 | exp '/' exp   { $$ = newast('/',$1,$3,NULL); }
+| exp '%' exp   { $$ = newast('%',$1,$3,NULL); }
 
 | '(' exp ')'   { $$ = $2;}
 
