@@ -30,6 +30,7 @@ set(SOURCES
         src/tree_data.c
         common/arena.c
         common/string_view.c
+        src/main.c
 )
 
 add_executable(tree ${SOURCES})

@@ -4,6 +4,7 @@
 #include "tree_data.h"
 #include "tree_errors.h"
 #include "tree_nodetypes.h"
+#include "../common/arena.h"
 
 // Forward declaration de symbol para no requerir la cabecera symtab aquí
 struct symbol; 

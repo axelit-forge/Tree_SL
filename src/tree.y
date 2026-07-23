@@ -9,9 +9,23 @@
     #include "tree_ast.h"
     #include "tree_symtab.h"
     #include "tree_eval.h"
+    #include "arena.h"
 
     int yylex();
     int yyerror(char* s);
+    extern Arena astArena;
+    extern Arena evalArena;
+
+
+    void procesar_expresion(struct ast* arbol) {
+        if (!arbol) return;
+        tData res = eval(arbol);
+        printf("=> ");
+        mostrarData(res);
+        printf("\n");
+
+        arenaReset(&astArena);
+    }
 %}
 %union{
     struct ast* a;
@@ -62,9 +76,9 @@ main: T_MAIN ':' block T_ENDMAIN { printf("output: "); mostrarData(eval($3)); pr
 ;
 
 interpreter_tree:
-| interpreter_tree exp    EOL { printf("=> "); mostrarData(eval($2)); printf("\n"); }
-| interpreter_tree stm    EOL { printf("=> "); mostrarData(eval($2)); printf("\n"); }
-| interpreter_tree fn_def EOL { printf("Funcion Definida.\n"); }
+| interpreter_tree exp    EOL { procesar_expresion($2); }
+| interpreter_tree stm    EOL { procesar_expresion($2); }
+| interpreter_tree fn_def EOL { printf("Funcion Definida.\n"); arenaReset(&astArena); }
 ;
 
 
@@ -147,8 +161,4 @@ list_id: ID         { $$ = addsym($1, NULL); }
 fn_def: T_FN ID '(' list_id ')' ':' stm T_ENDFN { add_definition($2, $4, $7); }
 ;
 %%
-int main(void){
-    yyparse();
-    //if(yyin != stdin)  fclose(yyin);
-    return 0;
-}
+

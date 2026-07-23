@@ -1,7 +1,6 @@
 #ifndef TREE_DATA_H
 #define TREE_DATA_H
 
-#include "../string.h"
 #include "../common/string_view.h"
 
 /* Estructura Núcleo del Sistema de Tipos Unificado */

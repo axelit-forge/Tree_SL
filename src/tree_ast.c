@@ -1,10 +1,11 @@
 #include "tree_ast.h"
-#include "tree_errors.h"
 #include <stdlib.h>
+
+extern Arena astArena;
 
 // Todas van SIN static porque Bison las necesita invocar al reducir reglas
 struct ast* newast(int nodoValue, struct ast* left, struct ast* right, tData data) {
-    struct ast* nuevo = (struct ast*)malloc(sizeof(struct ast));
+    struct ast* nuevo = arenaAlloc(&astArena, sizeof(struct ast));
     if (!nuevo) {
         tree_notify(ERR_SYS_NO_MEM_AST, "Fallo crítico en malloc de newast");
         return NULL;
@@ -17,7 +18,7 @@ struct ast* newast(int nodoValue, struct ast* left, struct ast* right, tData dat
 }
 
 struct ast* newflow(int nodetype, struct ast* cond, struct ast* iterable, struct ast* tblock, struct ast* fblock, struct symbol* s) {
-    struct flow* a = (struct flow*)malloc(sizeof(struct flow));
+    struct flow* a = arenaAlloc(&astArena, sizeof(struct flow));
     if (!a) {
         tree_notify(ERR_SYS_NO_MEM_FLOW, "Fallo crítico en malloc de newflow");
         return NULL;
@@ -32,7 +33,7 @@ struct ast* newflow(int nodetype, struct ast* cond, struct ast* iterable, struct
 }
 
 struct ast* newmemory_ast(int nodetype, struct symbol* s, struct ast* a) {
-    struct memory_ast* nvo = (struct memory_ast*)malloc(sizeof(struct memory_ast));
+    struct memory_ast* nvo = arenaAlloc(&astArena, sizeof(struct memory_ast));
     if (!nvo) {
         tree_notify(ERR_SYS_NO_MEM_MEMORY, "Fallo crítico en malloc de newmemory_ast");
         return NULL;
