@@ -1,12 +1,6 @@
 #include "tree_data.h"
-#include "tree_nodetypes.h"
-#include "tree_errors.h"
-#include "string.h"
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 
+extern Arena evalArena;
 
 /*==========================================================================*/
 /*								CONSTRUCTORES								*/

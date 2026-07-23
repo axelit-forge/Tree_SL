@@ -1,6 +1,4 @@
 #include "tree_errors.h"
-#include <stdio.h>
-#include <stdlib.h>
 
 void tree_notify(TreeErrorCode code, const char* extra_info) {
     const char* error_type = "ERROR";

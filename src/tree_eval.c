@@ -1,10 +1,4 @@
 #include "tree_eval.h"
-#include "tree_ast.h"
-#include "tree_symtab.h"
-#include "tree_errors.h"
-#include "tree_data.h"
-#include <stdio.h>
-#include <stdlib.h>
 
 /*=======================================================================*/
 /* 6. FUNCIONES DELEGADAS MÁS COHESIVAS Y LIMPIAS                        */

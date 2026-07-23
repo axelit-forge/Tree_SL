@@ -1,5 +1,4 @@
 #include "tree_ast.h"
-#include <stdlib.h>
 
 extern Arena astArena;
 

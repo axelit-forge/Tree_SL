@@ -2,6 +2,9 @@
 #define TREE_DATA_H
 
 #include "../common/string_view.h"
+#include "tree_errors.h"
+#include "tree_nodetypes.h"
+#include "../common/arena.h"
 
 /* Estructura Núcleo del Sistema de Tipos Unificado */
 typedef struct nodo_data {

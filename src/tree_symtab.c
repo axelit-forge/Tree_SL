@@ -1,8 +1,4 @@
 #include "tree_symtab.h"
-#include "tree_errors.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 struct symbol symtab[NHASH];
 
