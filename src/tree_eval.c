@@ -257,7 +257,7 @@ static tData eval_memory_ast(struct memory_ast *arbol) {
 
             struct symlist* listaArgs = s->args;
             int tamArgs = compute_size(s->args);
-            int tam = tamanio(coleccion_fuente);
+            int tam = tamanioData(coleccion_fuente);
 
             if (tamArgs != tam) {
                 tree_notify(ERR_COL_INDEX_OUT_OF_BOUNDS, "Cantidad de variables no coincide con tamaño de colección");

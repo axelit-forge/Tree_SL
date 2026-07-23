@@ -28,6 +28,7 @@ void tree_notify(TreeErrorCode code, const char* extra_info) {
         case ERR_COL_EXPECTED_LIST:       fprintf(stderr, "Operación exclusiva de Listas. Se esperaba una estructura tipo [].\n"); break;
         case ERR_COL_EXPECTED_SET:        fprintf(stderr, "Operación exclusiva de Conjuntos. Se esperaba una estructura tipo {}.\n"); break;
         case ERR_RUN_DIVISION_BY_ZERO:    fprintf(stderr, "Error matemático: División por cero.\n"); break;
+        case ERR_SEM_INVALID_TYPE:      fprintf(stderr, "Error semantico:.\n"); break;
         default: fprintf(stderr, "Error general de ejecución.\n"); break;
     }
 

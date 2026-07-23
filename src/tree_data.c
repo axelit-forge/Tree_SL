@@ -24,7 +24,7 @@ tData createData(int tipo)
 	switch (tipo)
 	{
 	case NODE_STR:
-		nvo->cad = create();
+		nvo->cad = (String_View){ .data = NULL, .count = 0 };
 		break;
 
 	case NODE_LIST:
@@ -57,7 +57,7 @@ tData createData(int tipo)
 tData createStr(char *s)
 {
 	tData nvo = createData(NODE_STR);
-	nvo->cad = load2(s);
+	nvo->cad = sv(s);
 	return nvo;
 }
 tData createInt(int value)
@@ -119,8 +119,8 @@ double get_real(tData d) {
 	return d->real;
 }
 
-str get_cad(tData d) {
-	if (!d) return NULL;
+String_View get_cad(tData d) {
+	if (!d) return (String_View){ .data = NULL, .count = 0 };
 	return d->cad;
 }
 
@@ -249,10 +249,19 @@ tData compara_mayor(tData a, tData b) {
         tree_notify(ERR_SYS_NULL_POINTER, "en compara_mayor");
         return NULL;
     }
-    double val_a = (a->tipoNodo == NODE_INT) ? a->value : a->real;
-    double val_b = (b->tipoNodo == NODE_INT) ? b->value : b->real;
+    if (a->tipoNodo == NODE_STR && b->tipoNodo == NODE_STR) {
+        return (sv_cmp(a->cad, b->cad) > 0) ? createBool("true") : createBool("false");
+    }
 
-    return (val_a > val_b) ? createBool("true") : createBool("false");
+    if ((a->tipoNodo == NODE_INT || a->tipoNodo == NODE_DOUBLE) &&
+        (b->tipoNodo == NODE_INT || b->tipoNodo == NODE_DOUBLE)) {
+        double val_a = (a->tipoNodo == NODE_INT) ? a->value : a->real;
+        double val_b = (b->tipoNodo == NODE_INT) ? b->value : b->real;
+        return (val_a > val_b) ? createBool("true") : createBool("false");
+        }
+
+    tree_notify(ERR_SEM_INVALID_TYPE, "Tipos incompatibles para comparación '>'");
+    return createBool("false");
 }
 
 tData compara_menor(tData a, tData b) {
@@ -260,6 +269,10 @@ tData compara_menor(tData a, tData b) {
         tree_notify(ERR_SYS_NULL_POINTER, "en compara_menor");
         return NULL;
     }
+    if (a->tipoNodo == NODE_STR && b->tipoNodo == NODE_STR) {
+        return (sv_cmp(a->cad, b->cad) < 0) ? createBool("true") : createBool("false");
+    }
+
     double val_a = (a->tipoNodo == NODE_INT) ? a->value : a->real;
     double val_b = (b->tipoNodo == NODE_INT) ? b->value : b->real;
 
@@ -271,6 +284,10 @@ tData compara_mayorigual(tData a, tData b) {
         tree_notify(ERR_SYS_NULL_POINTER, "en compara_mayorigual");
         return NULL;
     }
+    if (a->tipoNodo == NODE_STR && b->tipoNodo == NODE_STR) {
+        return (sv_cmp(a->cad, b->cad) >= 0) ? createBool("true") : createBool("false");
+    }
+
     double val_a = (a->tipoNodo == NODE_INT) ? a->value : a->real;
     double val_b = (b->tipoNodo == NODE_INT) ? b->value : b->real;
 
@@ -282,6 +299,10 @@ tData compara_menorigual(tData a, tData b) {
         tree_notify(ERR_SYS_NULL_POINTER, "en compara_menorigual");
         return NULL;
     }
+    if (a->tipoNodo == NODE_STR && b->tipoNodo == NODE_STR) {
+        return (sv_cmp(a->cad, b->cad) <= 0) ? createBool("true") : createBool("false");
+    }
+
     double val_a = (a->tipoNodo == NODE_INT) ? a->value : a->real;
     double val_b = (b->tipoNodo == NODE_INT) ? b->value : b->real;
 
@@ -305,7 +326,7 @@ tData compara_igual(tData a, tData b) {
         return (get_bool_value(a) == get_bool_value(b)) ? createBool("true") : createBool("false");
     }
 
-    return Igualdad(a, b) ? createBool("true") : createBool("false");
+    return equalData(a, b) ? createBool("true") : createBool("false");
 }
 
 tData compara_distinto(tData a, tData b) {
@@ -339,9 +360,7 @@ void mostrarData(tData nodo) {
             printf("%s", nodo->value ? "true" : "false");
             break;
         case NODE_STR:
-            if (nodo->cad) {
-                print(nodo->cad);
-            }
+            printf("%.*s", (int)nodo->cad.count, nodo->cad.data);
             break;
         case NODE_LIST:
             printf("[");
@@ -383,7 +402,7 @@ void agregarData(tData* cab, tData elem) {
     switch ((*cab)->tipoNodo) {
         case NODE_SET:
             aux = *cab;
-            if (pertenece(aux, elem) == 0) {
+            if (perteneceData(aux, elem) == 0) {
                 while (aux->sig)
                     aux = aux->sig;
                 aux->sig = createSet();
@@ -421,9 +440,7 @@ tData copiarData(tData copiado) {
             break;
         case NODE_STR:
             nvo = createData(NODE_STR);
-            if (nvo && copiado->cad) {
-                 nvo->cad = copyStr(copiado->cad);
-            }
+            nvo->cad = sv_copy(copiado->cad);
             break;
         case NODE_LIST:
             nvo = createList();
@@ -447,11 +464,6 @@ void freeData(tData descartado) {
     if (descartado == NULL) return;
 
     switch (descartado->tipoNodo) {
-        case NODE_STR:
-            if (descartado->cad) {
-                freeString(descartado->cad);
-            }
-            break;
         case NODE_LIST:
         case NODE_SET:
             freeData(descartado->dato);
@@ -464,7 +476,7 @@ void freeData(tData descartado) {
     free(descartado);
 }
 
-int Igualdad(tData A, tData B) {
+int equalData(tData A, tData B) {
     if (!A && !B) return 0;
     if (!A || !B || (A->tipoNodo != B->tipoNodo)) return 1;
 
@@ -477,18 +489,17 @@ int Igualdad(tData A, tData B) {
         case NODE_DOUBLE:
             return (A->real == B->real) ? 0 : 1;
         case NODE_STR:
-            return compStr(A->cad, B->cad);
-            return 0;
+            return sv_equals(A->cad, B->cad);
         case NODE_SET:
             trav1 = A;
             while (trav1) {
-                if (trav1->dato && pertenece(B, trav1->dato) == 0)
+                if (trav1->dato && perteneceData(B, trav1->dato) == 0)
                     return 1;
                 trav1 = trav1->sig;
             }
             trav1 = B;
             while (trav1) {
-                if (trav1->dato && pertenece(A, trav1->dato) == 0)
+                if (trav1->dato && perteneceData(A, trav1->dato) == 0)
                     return 1;
                 trav1 = trav1->sig;
             }
@@ -497,7 +508,7 @@ int Igualdad(tData A, tData B) {
             trav1 = A;
             trav2 = B;
             while (trav1 && trav2) {
-                if (Igualdad(trav1->dato, trav2->dato) != 0)
+                if (equalData(trav1->dato, trav2->dato) != 0)
                     return 1;
                 trav1 = trav1->sig;
                 trav2 = trav2->sig;
@@ -509,12 +520,12 @@ int Igualdad(tData A, tData B) {
     return 1;
 }
 
-int pertenece(tData estructura, tData elem) {
+int perteneceData(tData estructura, tData elem) {
     if (!estructura || !elem) return 0;
 
     tData trav = estructura;
     while (trav != NULL) {
-        if (trav->dato && Igualdad(trav->dato, elem) == 0) {
+        if (trav->dato && equalData(trav->dato, elem) == 0) {
             return 1;
         }
         trav = trav->sig;
@@ -522,7 +533,7 @@ int pertenece(tData estructura, tData elem) {
     return 0;
 }
 
-int tamanio(tData cab) {
+int tamanioData(tData cab) {
     if (!cab || cab->dato == NULL) return 0;
 
     int cont = 0;
@@ -706,7 +717,7 @@ tData inData(tData elemento, tData contenedor) {
         return NULL;
     }
 
-    if (pertenece(contenedor, elemento)) {
+    if (perteneceData(contenedor, elemento)) {
         return createBool("true");
     }
     return createBool("false");
@@ -756,7 +767,7 @@ tData diffData(tData conj_a, tData conj_b) {
     tData aux = conj_a;
 
     while (aux) {
-        if (aux->dato && !pertenece(conj_b, aux->dato)) {
+        if (aux->dato && !perteneceData(conj_b, aux->dato)) {
             agregarData(&C, aux->dato);
         }
         aux = aux->sig;
@@ -778,7 +789,7 @@ tData interData(tData conj_a, tData conj_b) {
     tData aux = conj_a;
 
     while (aux) {
-        if (aux->dato && pertenece(conj_b, aux->dato)) {
+        if (aux->dato && perteneceData(conj_b, aux->dato)) {
             agregarData(&C, aux->dato);
         }
         aux = aux->sig;
@@ -798,7 +809,7 @@ tData containsData(tData conj_a, tData conj_b) {
 
     tData aux = conj_b;
     while (aux) {
-        if (aux->dato && !pertenece(conj_a, aux->dato)) {
+        if (aux->dato && !perteneceData(conj_a, aux->dato)) {
             return createBool("false");
         }
         aux = aux->sig;
@@ -840,7 +851,7 @@ tData moduloData(tData a) {
     }
 
     if (a->tipoNodo == NODE_LIST || a->tipoNodo == NODE_SET) {
-        return createInt(tamanio(a));
+        return createInt(tamanioData(a));
     }
 
     tree_notify(ERR_SEM_TYPE_MISMATCH, "El operador de módulo / longitud (|) no es válido para este tipo de dato");

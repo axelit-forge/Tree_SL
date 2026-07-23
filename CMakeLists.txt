@@ -28,7 +28,6 @@ set(SOURCES
         src/tree_eval.c
         src/tree_symtab.c
         src/tree_data.c
-        string.c
         common/arena.c
         common/string_view.c
 )

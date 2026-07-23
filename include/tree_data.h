@@ -2,12 +2,13 @@
 #define TREE_DATA_H
 
 #include "../string.h"
+#include "../common/string_view.h"
 
 /* Estructura Núcleo del Sistema de Tipos Unificado */
 typedef struct nodo_data {
     int tipoNodo;
     union {
-       str cad;
+       String_View cad;
        int value;
        double real;
        struct {
@@ -35,7 +36,7 @@ tData createSet();
 int get_tipo(tData d);
 int get_value(tData d);
 double get_real(tData d);
-str get_cad(tData d);
+String_View get_cad(tData d);
 int get_bool_value(tData d);
 
 tData get_dato(tData d);
@@ -66,13 +67,13 @@ tData compara_distinto(tData a, tData b);
 /* ======================================================================= */
 /* 4. INFRAESTRUCTURA DE MEMORIA Y PROCESOS BÁSICOS                        */
 /* ======================================================================= */
-int Igualdad(tData a, tData b);
+int equalData(tData a, tData b);
 void mostrarData(tData d);
 void freeData(tData d);
 tData copiarData(tData d);
 void agregarData(tData* cab, tData elem);
-int pertenece(tData estructura, tData elem);
-int tamanio(tData cab);
+int perteneceData(tData estructura, tData elem);
+int tamanioData(tData cab);
 
 /* ======================================================================= */
 /* 5. INTERFACES DE LISTAS Y CONJUNTOS                                      */
