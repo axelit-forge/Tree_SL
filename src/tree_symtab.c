@@ -1,5 +1,7 @@
 #include "tree_symtab.h"
 
+extern Arena astArena;
+
 struct symbol symtab[NHASH];
 
 static unsigned int symhash(char *sym) {
@@ -57,7 +59,7 @@ void add_definition(struct symbol* s, struct symlist* sl, struct ast* body) {
 }
 
 struct symlist* addsym(struct symbol* s, struct symlist* sl) {
-    struct symlist* lista = malloc(sizeof(struct symlist));
+    struct symlist* lista = arenaAlloc(&astArena, sizeof(struct symlist));
     if (!lista) {
         tree_notify(ERR_SYS_NO_MEM_MEMORY, "No hay memoria para expandir symlist (addsym)");
         return NULL;
@@ -68,10 +70,7 @@ struct symlist* addsym(struct symbol* s, struct symlist* sl) {
 }
 
 void free_symlist(struct symlist* sl) {
-    if (!sl) return;
-    struct symlist* next = sl->next;
-    free(sl);
-    free_symlist(next);
+    (void)sl;
 }
 
 int compute_size(struct symlist* sl) {

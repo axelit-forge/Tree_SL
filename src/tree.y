@@ -92,10 +92,10 @@ stm: exp ';'  { $$ = $1; }
 
 | T_WHILE '(' exp ')' T_DO block T_END                  { $$ = newflow(NODE_WHILE,  $3, NULL, $6 , NULL, NULL); }
 
-| T_FORALL '(' ID T_IN exp '|' exp ')' T_DO stm T_END { $$ = newflow(NODE_FORALL, $7, $5  , $10, NULL, $3  ); }
-| T_FORANY '(' ID T_IN exp '|' exp ')' T_DO stm T_END { $$ = newflow(NODE_FORANY, $7, $5  , $10, NULL, $3  ); }
-| T_FORALL '(' ID T_IN exp ')' T_DO stm T_END { $$ = newflow(NODE_FORALL, NULL, $5  , $8, NULL, $3  ); }
-| T_FORANY '(' ID T_IN exp ')' T_DO stm T_END { $$ = newflow(NODE_FORANY, NULL, $5  , $8, NULL, $3  ); }
+| T_FORALL '(' ID T_IN exp '|' exp ')' T_DO block T_END { $$ = newflow(NODE_FORALL, $7, $5  , $10, NULL, $3  ); }
+| T_FORANY '(' ID T_IN exp '|' exp ')' T_DO block T_END { $$ = newflow(NODE_FORANY, $7, $5  , $10, NULL, $3  ); }
+| T_FORALL '(' ID T_IN exp ')' T_DO block T_END { $$ = newflow(NODE_FORALL, NULL, $5  , $8, NULL, $3  ); }
+| T_FORANY '(' ID T_IN exp ')' T_DO block T_END { $$ = newflow(NODE_FORANY, NULL, $5  , $8, NULL, $3  ); }
 ;
 
 exp: NUM_INT    { $$ = newast(NODE_INT   , NULL, NULL, $1); }

@@ -1,0 +1,10 @@
+main:
+usuarios = {"admin", "guest", "axel", "isa"};
+mencionados = [];
+
+forall (u in usuarios | u != "admin") do
+    add u to mencionados;
+    u;
+end
+mencionados;
+endmain

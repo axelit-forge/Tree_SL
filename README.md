@@ -4,7 +4,7 @@ Este proyecto consiste en el rediseño arquitectónico y la refactorización pro
 
 El desarrollo original fue optimizado para mitigar la deuda técnica acumulada durante su fase de prototipado rápido, migrando de una estructura monolítica hacia un diseño altamente modularizado basado en la separación estricta de interfaces (`include/`) e implementaciones (`src/`).
 
-## 🛠 Objetivos de la Refactorización Académica
+##  Objetivos de la Refactorización Académica
 
 * **Modularización del AST:** Desacoplamiento de las factorías de construcción de nodos sintácticos de la lógica del despachador de evaluación semántica.
 * **Sistema de Diagnóstico por Rangos:** Implementación de un subsistema de manejo de errores correlativo y estandarizado, eliminando códigos numéricos mágicos.

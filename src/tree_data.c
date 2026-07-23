@@ -7,8 +7,7 @@ extern Arena evalArena;
 /*==========================================================================*/
 tData createData(int tipo)
 {
-	tData nvo;
-	nvo = (tData)malloc(sizeof(TNodoData));
+	tData nvo= arenaAlloc(&evalArena, sizeof(TNodoData));
 
 	if (!nvo) {
 		tree_notify(ERR_SYS_NO_MEM_MEMORY, "Fallo crítico en malloc de createData");
@@ -85,7 +84,6 @@ tData createBool(char *s) {
 	}
 
 	tree_notify(ERR_SEM_TYPE_MISMATCH, "Valor de cadena no válido para inicializar tipo Bool");
-	free(nvo);
 	return NULL;
 }
 
@@ -320,7 +318,7 @@ tData compara_igual(tData a, tData b) {
         return (get_bool_value(a) == get_bool_value(b)) ? createBool("true") : createBool("false");
     }
 
-    return equalData(a, b) ? createBool("true") : createBool("false");
+    return equalData(a, b) ? createBool("false") : createBool("true");
 }
 
 tData compara_distinto(tData a, tData b) {
@@ -455,19 +453,7 @@ tData copiarData(tData copiado) {
 }
 
 void freeData(tData descartado) {
-    if (descartado == NULL) return;
-
-    switch (descartado->tipoNodo) {
-        case NODE_LIST:
-        case NODE_SET:
-            freeData(descartado->dato);
-            freeData(descartado->sig);
-            break;
-        default:
-            break;
-    }
-
-    free(descartado);
+    (void)descartado;
 }
 
 int equalData(tData A, tData B) {
@@ -483,7 +469,7 @@ int equalData(tData A, tData B) {
         case NODE_DOUBLE:
             return (A->real == B->real) ? 0 : 1;
         case NODE_STR:
-            return sv_equals(A->cad, B->cad);
+            return sv_cmp(A->cad, B->cad);
         case NODE_SET:
             trav1 = A;
             while (trav1) {
@@ -519,7 +505,7 @@ int perteneceData(tData estructura, tData elem) {
 
     tData trav = estructura;
     while (trav != NULL) {
-        if (trav->dato && equalData(trav->dato, elem) == 0) {
+        if (trav->dato && equalData(trav->dato, elem)==0) {
             return 1;
         }
         trav = trav->sig;
@@ -556,7 +542,6 @@ void eliminar_pos(tData* cab, int pos) {
 
             a_borrar->dato = NULL;
             a_borrar->sig = NULL;
-            free(a_borrar);
         }
         return;
     }

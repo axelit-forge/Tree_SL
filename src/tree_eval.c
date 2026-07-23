@@ -194,14 +194,18 @@ static tData eval_flow(struct flow *a) {
 
             while (iterator) {
                 tData elemento = get_dato(iterator);
+
+                s->data = copiarData(elemento);
+
                 int booleano = cond ? get_bool_value(eval(cond)) : 1;
 
                 if (booleano != 0) {
-                    s->data = copiarData(elemento);
                     nuevo = eval(tblock);
                 }
+
                 iterator = get_next(iterator);
             }
+
             freeData(collection);
             break;
         }
@@ -210,17 +214,21 @@ static tData eval_flow(struct flow *a) {
             tData iterator = collection;
             int found = 0;
 
-            while (iterator && found == 0) {
+            while (iterator && !found) {
                 tData elemento = get_dato(iterator);
+
+                s->data = copiarData(elemento);
+
                 int booleano = cond ? get_bool_value(eval(cond)) : 1;
 
                 if (booleano != 0) {
                     found = 1;
-                    s->data = copiarData(elemento);
                     nuevo = eval(tblock);
                 }
+
                 iterator = get_next(iterator);
             }
+
             freeData(collection);
             break;
         }
@@ -349,8 +357,6 @@ tData eval(struct ast *a) {
         }
         return a->d;
     }
-
-    // El switch despacha limpiamente a funciones semánticas dedicadas
     switch (type)
     {
         case '+': case '-': case '*': case '/':
