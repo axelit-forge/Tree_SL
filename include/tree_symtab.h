@@ -9,7 +9,6 @@
 #define NHASH 9997
 
 // Forward declaration de ast para el body de las funciones
-struct ast;
 
 /*=======================================================================*/
 /* ESTRUCTURAS DE SÍMBOLOS Y ENTORNOS                                    */
@@ -22,22 +21,29 @@ struct symbol {
     struct ast* body;
 };
 
+//struct symbol symtab[NHASH];
+
+typedef struct Scope {
+    struct symbol symtab[NHASH];
+    struct Scope *parent;
+} Scope;
+
 struct symlist {
     struct symbol* s;
     struct symlist* next;
-};
-
-// Dejamos planteado el Environment para los Scopes Locales del Punto 5
-struct env {
-    struct symbol symbols[NHASH];
-    struct env* outer; // Puntero al entorno padre (Scope superior)
 };
 
 /*=======================================================================*/
 /* PROTOTIPOS DE LA TABLA DE SÍMBOLOS                                    */
 /*=======================================================================*/
 
+void init_symtab();
+void push_scope();
+void pop_scope();
+
 struct symbol* lookup(char* sym);
+struct symbol* lookup_local(char *sym);
+struct symbol* insert_local(char *sym);
 void add_definition(struct symbol* s, struct symlist* sl, struct ast* body);
 
 struct symlist* addsym(struct symbol* s, struct symlist* sl);
