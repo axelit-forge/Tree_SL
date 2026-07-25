@@ -40,6 +40,7 @@ typedef enum {
     NODE_FORALL,
     NODE_FORANY,
     NODE_PRINT,
+    NODE_RETURN,
 
     // --- Memoria y Funciones ---
     NODE_VAR_REF,

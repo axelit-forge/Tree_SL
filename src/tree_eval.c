@@ -1,7 +1,10 @@
 #include "tree_eval.h"
 
+static int is_returning = 0;
+static tData return_value = NULL;
+
 /*=======================================================================*/
-/* 6. FUNCIONES DELEGADAS MÁS COHESIVAS Y LIMPIAS                        */
+/* FUNCIONES DELEGADAS MÁS COHESIVAS Y LIMPIAS                        */
 /*=======================================================================*/
 
 static tData eval_aritmetica(int op, tData l, tData r) {
@@ -120,6 +123,7 @@ static tData eval_operacion_lista(int op, struct ast *a) {
     }
 
     tData aux_result = eval(a->l);
+
     tData list_result = eval(a->r);
 
     if (!aux_result || !list_result) {
@@ -255,6 +259,8 @@ static tData eval_memory_ast(struct memory_ast *arbol) {
 
     switch (get_nodetype((struct ast*)arbol)) {
         case NODE_ASIGNACIONMULTI: {
+            if (!s || !s->data) return NULL;
+
             tData coleccion_fuente = s->data;
 
             if (get_tipo(coleccion_fuente) != NODE_LIST && get_tipo(coleccion_fuente) != NODE_SET) {
@@ -262,7 +268,7 @@ static tData eval_memory_ast(struct memory_ast *arbol) {
                 return NULL;
             }
 
-            struct symlist* listaArgs = s->args;
+            struct symlist *listaArgs = s->args;
             int tamArgs = compute_size(s->args);
             int tam = tamanioData(coleccion_fuente);
 
@@ -272,7 +278,6 @@ static tData eval_memory_ast(struct memory_ast *arbol) {
             }
 
             while (listaArgs) {
-                // Se asigna la data del nodo interno al símbolo de la lista de argumentos
                 if (listaArgs->s) {
                     listaArgs->s->data = copiarData(get_dato(coleccion_fuente));
                 }
@@ -283,21 +288,93 @@ static tData eval_memory_ast(struct memory_ast *arbol) {
         }
 
         case NODE_ASIGNACION: {
-            nuevo = eval(a);
-            s->data = copiarData(nuevo);
-            break;
+            if (!s || !s->name) {
+                fprintf(stderr, "Error: Intento de asignación a un símbolo inválido.\n");
+                return NULL;
+            }
+
+            tData val = eval(a);
+            if (!val) {
+                return NULL;
+            }
+            struct symbol *sp = lookup(s->name);
+            if (sp != NULL) {
+                sp->data = copiarData(val);
+                return sp->data;
+            }
+            return NULL;
         }
         case NODE_VAR_REF: {
-            nuevo = copiarData(s->data);
-            if (nuevo == NULL) {
+            if (!s) {
+                tree_notify(ERR_SYS_NULL_POINTER, "Referencia a símbolo nulo en VAR_REF");
+                return NULL;
+            }
+
+            struct symbol *sp = lookup(s->name);
+            if (sp && sp->data) {
+                nuevo = copiarData(sp->data);
+            } else {
                 tree_notify(ERR_GENERAL, "Se intentó acceder a una variable no inicializada");
             }
             break;
         }
         case NODE_FN_CALL:
-            // A implementar a futuro con scopes
-            break;
+            {
+            if (!s || !s->name) return NULL;
 
+            struct symbol *fn_sym = lookup(s->name);
+            if (!fn_sym || !fn_sym->body) {
+              tree_notify(ERR_GENERAL, "Llamada a función no definida");
+               return NULL;
+            }
+
+            struct symlist *param_iter = fn_sym->args;
+            struct ast *arg_iter = a;
+
+            #define MAX_PARAMS 16
+            struct symbol *params_backed[MAX_PARAMS];
+            tData old_values[MAX_PARAMS];
+            int param_count = 0;
+
+            while (param_iter && arg_iter) {
+                struct symbol *param_sym = param_iter->s;
+                tData arg_val = NULL;
+
+                if (get_nodetype(arg_iter) == NODE_LIST_OF_AST) {
+                    arg_val = eval(arg_iter->l);
+                    arg_iter = arg_iter->r;
+                } else {
+                    arg_val = eval(arg_iter);
+                    arg_iter = NULL;
+                }
+
+                if (param_sym && param_sym->name) {
+                    struct symbol *var_target = lookup(param_sym->name);
+                    if (var_target && param_count < MAX_PARAMS) {
+
+                        params_backed[param_count] = var_target;
+                        old_values[param_count] = var_target->data ? copiarData(var_target->data) : NULL;
+
+                        var_target->data = copiarData(arg_val);
+                        param_count++;
+                    }
+                }
+            param_iter = param_iter->next;
+            }
+
+            int prev_returning = is_returning;
+            is_returning = 0;
+            eval(fn_sym->body);
+            tData resultado = return_value;
+            is_returning = prev_returning;
+            return_value = NULL;
+
+            for (int i = 0; i < param_count; i++) {
+                params_backed[i]->data = old_values[i];
+            }
+
+            return resultado;
+        }
         default:
             break;
     }
@@ -395,10 +472,19 @@ tData eval(struct ast *a) {
         case NODE_ASIGNACION: case NODE_VAR_REF: case NODE_FN_CALL:
             return eval_memory_ast((struct memory_ast *)a);
 
-        case NODE_BLOCK:
-            eval(a->l);
-            return eval(a->r);
+        case NODE_BLOCK: {
+            tData res = eval(a->l);
 
+            if (is_returning) { return return_value; }
+            if (a->r) res = eval(a->r);
+
+            return res;
+        }
+        case NODE_RETURN: {
+            return_value = a->l ? eval(a->l) : NULL;
+            is_returning = 1;
+            return return_value;
+        }
         default:
             printf("Runtime Error: Tipo de nodo desconocido en eval: %d\n", type);
             break;

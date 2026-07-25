@@ -20,7 +20,7 @@ static unsigned int symhash(const char *sym) {
 /* GESTIÓN DE ÁMBITOS (SCOPES)                                          */
 /*=======================================================================*/
 
-void init_symtab(void) {
+void init_symtab() {
     current_scope = arenaAlloc(&astArena, sizeof(Scope));
     if (!current_scope) {
         tree_notify(ERR_SYS_NO_MEM_MEMORY, "No hay memoria para inicializar el ámbito global");
@@ -31,7 +31,7 @@ void init_symtab(void) {
     current_scope->parent = NULL;
 }
 
-void push_scope(void) {
+void push_scope() {
     Scope *new_scope = arenaAlloc(&astArena, sizeof(Scope));
     if (!new_scope) {
         tree_notify(ERR_SYS_NO_MEM_MEMORY, "No hay memoria para crear un nuevo ámbito (push_scope)");
@@ -125,31 +125,30 @@ struct symbol* lookup(char *sym) {
         tree_notify(ERR_SYS_NULL_POINTER, "en lookup: nombre de símbolo nulo");
         return NULL;
     }
+    unsigned int index = symhash(sym) % NHASH;
+    struct symbol *sp = &current_scope->symtab[index];
+    int count = 1;
 
-    Scope *scope_iter = current_scope;
-
-    while (scope_iter != NULL) {
-        unsigned int index = symhash(sym) % NHASH;
-        struct symbol *sp = &scope_iter->symtab[index];
-        int count = 1;
-
-        while (count <= NHASH) {
-            if (!sp->name) {
-                break;
-            }
-            if (strcmp(sp->name, sym) == 0) {
-                return sp;
-            }
-            sp++;
-            if (sp >= scope_iter->symtab + NHASH) {
-                sp = scope_iter->symtab;
-            }
-            count++;
+    while (count <= NHASH) {
+        if (!sp->name) {
+            sp->name = strdup(sym);
+            sp->data = NULL;
+            sp->args = NULL;
+            sp->body = NULL;
+            return sp;
         }
-        scope_iter = scope_iter->parent;
+        if (strcmp(sp->name, sym) == 0) {
+            return sp;
+        }
+        sp++;
+        if (sp >= current_scope->symtab + NHASH) {
+            sp = current_scope->symtab;
+        }
+        count++;
     }
 
-    return insert_local(sym);
+    tree_notify(ERR_SYS_OVERFLOW_SYMTAB, sym);
+    return NULL;
 }
 
 /*=======================================================================*/
@@ -157,13 +156,19 @@ struct symbol* lookup(char *sym) {
 /*=======================================================================*/
 
 void add_definition(struct symbol* s, struct symlist* sl, struct ast* body) {
-    if (!s) {
-        tree_notify(ERR_SYS_NULL_POINTER, "en add_definition: símbolo nulo");
+    if (!s || !s->name) {
+        fprintf(stderr, "Error: Se intentó definir una función sin un símbolo válido.\n");
         return;
     }
+    struct symbol *fn_sym = lookup(s->name);
 
-    s->args = sl;
-    s->body = body;
+    if (fn_sym) {
+        fn_sym->args = sl;
+        fn_sym->body = body;
+        printf("[SISTEMA]: Función '%s' definida correctamente en la tabla global.\n", fn_sym->name);
+    } else {
+        fprintf(stderr, "Error: No se pudo registrar la función '%s'.\n", s->name);
+    }
 }
 
 struct symlist* addsym(struct symbol* s, struct symlist* sl) {

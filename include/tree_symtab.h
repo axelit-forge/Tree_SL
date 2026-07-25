@@ -46,7 +46,7 @@ struct symbol* lookup_local(char *sym);
 struct symbol* insert_local(char *sym);
 void add_definition(struct symbol* s, struct symlist* sl, struct ast* body);
 
-struct symlist* addsym(struct symbol* s, struct symlist* sl);
+struct symlist *addsym(struct symbol *sym, struct symlist *next);
 void free_symlist(struct symlist* sl);
 int compute_size(struct symlist* sl);
 

@@ -31,49 +31,50 @@ EXP ([eE][+-]?[0-9]+)
 "%" |
 "/" {  return yytext[0]; }
 
-">"   { return T_MAYOR; }
-"<"   { return T_MENOR; }
-">="  { return T_MAYOR_IGUAL; }
-"<="  { return T_MENOR_IGUAL; }
-"=="  { return T_IGUAL; }
-"!="  { return T_DISTINTO; }
+">"   { return MAYOR; }
+"<"   { return MENOR; }
+">="  { return MAYOR_IGUAL; }
+"<="  { return MENOR_IGUAL; }
+"=="  { return IGUAL; }
+"!="  { return DISTINTO; }
 
-and   { return T_AND; }
-or    { return T_OR; }
-not   { return T_NOT; }
+and   { return AND; }
+or    { return OR; }
+not   { return NOT; }
 
-if        { return T_IF;      }
-else      { return T_ELSE;    }
-endif     { return T_ENDIF;   }
-while     { return T_WHILE;   }
-do        { return T_DO;      }
-end       { return T_END;     }
-forall    { return T_FORALL;  }
-forany    { return T_FORANY;  }
+if        { return IF;      }
+else      { return ELSE;    }
+endif     { return ENDIF;   }
+while     { return WHILE;   }
+do        { return DO;      }
+end       { return END;     }
+forall    { return FORALL;  }
+forany    { return FORANY;  }
 
-print   { return T_PRINT;      }
-fn      { return T_FN;         }
-endfn   { return T_ENDFN;      }
-main    { return T_MAIN;       }
-endmain { return T_ENDMAIN;    }
-"$tree" { BEGIN(REPL); return T_PESOS_TREE; }
+print   { return PRINT;      }
+main    { return MAIN;       }
+endmain { return ENDMAIN;    }
+function { return FUNCTION;  }
+return  { return RETURN;     }
+end     { return END;        }
+"$tree" { BEGIN(REPL); return PESOS_TREE; }
 
-kick   { return T_KICK;   }
-add    { return T_ADD;    }
-take   { return T_TAKE;   }
-from   { return T_FROM;   }
-to     { return T_TO;     }
-concat { return T_CONCAT; }
+kick   { return KICK;   }
+add    { return ADD;    }
+take   { return TAKE;   }
+from   { return FROM;   }
+to     { return TO;     }
+concat { return CONCAT; }
 
-in        { return T_IN; }
-union     { return T_UNION; }
-inter     { return T_INTER; }
-diff      { return T_DIFF;  }
-\get       { return T_GET; }
-\contains { return T_CONTAINS; }
+in        { return IN; }
+union     { return UNION; }
+inter     { return INTER; }
+diff      { return DIFF;  }
+\get       { return GET; }
+\contains { return CONTAINS; }
 
 "true" |
-"false" { yylval.td = createBool(yytext); return T_BOOL; }
+"false" { yylval.td = createBool(yytext); return BOOL; }
 
 [0-9]+                  { yylval.td = createInt(atoi(strdup(yytext))); return NUM_INT; }
 \"[^\"]*\"      { yylval.td = createStr(strdup(yytext)); return ATOM; }
@@ -81,9 +82,10 @@ diff      { return T_DIFF;  }
 [0-9]+"."?[0-9]*{EXP}? |
 [0-9]*"."?[0-9]+{EXP}?  { yylval.td = createDouble(atof(strdup(yytext))); return NUM_DOUBLE; }
 
-[ \t]  {} 
+[ \t\r]+  {}
 <REPL>\n { return EOL; }
 \n  {}
+"--".*     {}
 .   { printf("CARACTER DESCONOCIDO: %s\n",yytext); }
 
 %%
