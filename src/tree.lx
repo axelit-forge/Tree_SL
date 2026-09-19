@@ -50,6 +50,8 @@ do        { return DO;      }
 end       { return END;     }
 forall    { return FORALL;  }
 forany    { return FORANY;  }
+"let"     { return LET;     }
+"=>"      { return ARROW;   }
 
 print   { return PRINT;      }
 main    { return MAIN;       }

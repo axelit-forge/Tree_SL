@@ -259,7 +259,10 @@ static tData eval_memory_ast(struct memory_ast *arbol) {
 
     switch (get_nodetype((struct ast*)arbol)) {
         case NODE_ASIGNACIONMULTI: {
-            if (!s || !s->data) return NULL;
+            if (!s) {
+                tree_notify(ERR_SYS_NULL_POINTER, "Símbolo fuente nulo en asignación múltiple");
+                return NULL;
+            }
 
             tData coleccion_fuente = s->data;
 
@@ -268,8 +271,8 @@ static tData eval_memory_ast(struct memory_ast *arbol) {
                 return NULL;
             }
 
-            struct symlist *listaArgs = s->args;
-            int tamArgs = compute_size(s->args);
+            struct symlist *listaArgs = (struct symlist*)a;
+            int tamArgs = compute_size(listaArgs);
             int tam = tamanioData(coleccion_fuente);
 
             if (tamArgs != tam) {
@@ -277,7 +280,7 @@ static tData eval_memory_ast(struct memory_ast *arbol) {
                 return NULL;
             }
 
-            while (listaArgs) {
+            while (listaArgs && coleccion_fuente) {
                 if (listaArgs->s) {
                     listaArgs->s->data = copiarData(get_dato(coleccion_fuente));
                 }
@@ -469,7 +472,7 @@ tData eval(struct ast *a) {
         case NODE_IF: case NODE_WHILE: case NODE_FORALL: case NODE_FORANY:
             return eval_flow((struct flow *)a);
 
-        case NODE_ASIGNACION: case NODE_VAR_REF: case NODE_FN_CALL:
+        case NODE_ASIGNACION: case NODE_VAR_REF: case NODE_FN_CALL: case NODE_ASIGNACIONMULTI:
             return eval_memory_ast((struct memory_ast *)a);
 
         case NODE_BLOCK: {

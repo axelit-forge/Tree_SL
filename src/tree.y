@@ -39,6 +39,8 @@
 %token PRINT
 %token FUNCTION
 %token RETURN
+%token LET
+%token ARROW
 
 %token <td> NUM_INT ATOM NUM_DOUBLE BOOL
 %token <s> ID
@@ -116,6 +118,7 @@ stm: exp ';'                                      { $$ = $1; }
 | FORANY '(' ID IN exp '|' exp ')' DO block END { $$ = newflow(NODE_FORANY, $7, $5,   $10, NULL, $3  ); }
 | FORALL '(' ID IN exp ')' DO block END         { $$ = newflow(NODE_FORALL, NULL, $5, $8,  NULL, $3  ); }
 | FORANY '(' ID IN exp ')' DO block END         { $$ = newflow(NODE_FORANY, NULL, $5, $8,  NULL, $3  ); }
+| LET ID ARROW '(' list_id ')' ';'              { $$ = newmemory_ast(NODE_ASIGNACIONMULTI, $2, $5); }
 ;
 
 exp: NUM_INT    { $$ = newast(NODE_INT   , NULL, NULL, $1); }

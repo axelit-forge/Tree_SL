@@ -1,13 +1,12 @@
-fn suma(x,y): 
-    x+y;
-endfn
-fn fact(n):
-    if(n==0)
-        1;
+function factorial(n):
+    if (n <= 1)
+        return 1;
     else
-        n*fact(n-1);
+        return n * factorial(n - 1);
     endif
-endfn
+end
+
 main:
-    if( fact(4) == 24 ) true; else false; endif
+    resultado = factorial(3);
+    print(resultado);
 endmain
