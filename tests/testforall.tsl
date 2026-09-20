@@ -1,0 +1,17 @@
+function procesarMultiplos(lista, base):
+    print(lista);
+
+    forall ( elem in lista | (elem % base) == 0 ) do
+        print(elem);
+    end
+
+    return 0;
+end
+
+main:
+    numeros = [2, 3, 4, 6, 8, 9, 10, 12];
+    divisor = 3;
+    
+    print(divisor);
+    res = procesarMultiplos(numeros, divisor);
+endmain

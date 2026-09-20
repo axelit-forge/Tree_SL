@@ -7,6 +7,6 @@ function factorial(n):
 end
 
 main:
-    resultado = factorial(3);
+    resultado = factorial(4);
     print(resultado);
 endmain

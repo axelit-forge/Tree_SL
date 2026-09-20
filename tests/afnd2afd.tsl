@@ -1,0 +1,54 @@
+main:
+    -- 1. DEFINICIÓN DEL AFND (Autómata A)
+    estadosA    = {0, 1, 2};
+    alfabetoA   = {"a", "b"};
+    transA      = [ [0, "a", 0], [0, "a", 1], [1, "b", 2] ];
+    inicialA    = {0};
+    finalesA    = {2};
+
+    A = [estadosA, alfabetoA, transA, inicialA, finalesA];
+    let A => (QA, SigmaA, DeltaA, q0A, FA);
+
+    -- 2. CONSTRUCCIÓN DE SUBCONJUNTOS (AFD B)
+    estadosB        = [q0A];
+    pendientes      = [q0A];
+    transB          = [];
+    finalesB        = [];
+    inicialB        = q0A;
+    alfabetoB       = SigmaA;
+
+    while (|pendientes| > 0) do
+        actual = get 0 from pendientes;
+        pendientes = kick 0 from pendientes;
+
+        forall ( s in alfabetoB ) do
+            destino = {};
+
+            forall ( t in DeltaA | ((get 1 from t) == s) and ((get 0 from t) in actual) ) do
+                destino = destino union { get 2 from t };
+            end
+
+            if (|destino| > 0)
+                transB = add [actual, s, destino] to transB;
+
+                if (not (destino in estadosB))
+                    estadosB   = add destino to estadosB;
+                    pendientes = add destino to pendientes;
+                endif
+            endif
+        end
+    end
+
+    -- 3. DETERMINACIÓN DE ESTADOS FINALES EN B
+    forall ( q in estadosB ) do
+        interseccion = q inter FA;
+        if (|interseccion| > 0)
+            finalesB = add q to finalesB;
+        endif
+    end
+
+    -- 4. ENSAMBLADO DEL AFD COMPLETO (Autómata B)
+    B = [estadosB, alfabetoB, transB, inicialB, finalesB];
+
+    print(B);
+endmain
